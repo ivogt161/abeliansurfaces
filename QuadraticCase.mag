@@ -1,0 +1,34 @@
+
+PossibleEllGovernedByQuadratic:=function(C)
+	N:=Conductor(C);
+	c:=&*[p eq 2 select 8 else p: p in PrimeFactors(N)];
+	D:=DirichletGroup(c);
+
+	chars:=[&*s:s in Subsets(Set(Generators(D)))| #s gt 0];
+	L:=[];
+	for phi in chars do
+		M:=0;
+		p:=3;
+		repeat
+			p:=NextPrime(p);
+			if c mod p ne 0 and phi(p) eq -1 then		
+				fp:=ReciprocalPolynomial(LPolynomial(ChangeRing(C,GF(p))));
+				ap:=-Coefficient(fp,3);
+				//We throw this p in there so we don't do an \ell = p  thing.
+				M := GCD(M,p*ap);
+			end if;
+		until M eq 2^Valuation(M,2)*3^Valuation(M,3) or p gt 100;
+		M:=M div (2^Valuation(M,2) * 3^Valuation(M,3));
+		if M gt 1 then
+			Append(~L,<phi,PrimeFactors(M)>);
+		end if;
+	end for;
+	return L;
+end function;
+
+_<x>:=PolynomialRing(Rationals());
+f:=x^6 - x^3 - x + 1;
+C:=HyperellipticCurve(f);
+
+PossibleEllGovernedByQuadratic(C);
+
