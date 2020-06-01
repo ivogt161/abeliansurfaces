@@ -1,0 +1,328 @@
+\documentclass[11pt]{amsart}
+\usepackage{latexsym}
+\usepackage{amssymb,amsmath,mathabx, amscd}
+\usepackage[pdftex]{graphicx}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usetikzlibrary{snakes}
+\usepackage[margin=1in]{geometry}
+%\hypersetup{colorlinks=true,urlcolor=RawSienna,citecolor=RoyalPurple,linkcolor=MidnightBlue}
+\usepackage{listings}
+\usepackage{courier}
+\usepackage{tikz-cd}
+\usepackage{color}
+\lstset{
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{blue},
+	language=python,
+	xleftmargin=16pt,
+}
+\usepackage{MnSymbol}
+\usepackage{hyperref}
+\usepackage{mathrsfs, colonequals}
+
+\newcommand{\aff}[1]{\mathbb{A}_k^{#1}}
+
+\renewcommand{\aa}{\mathbb{A}}
+\newcommand{\cc}{\mathbb{C}}
+\newcommand{\rr}{\mathbb{R}}
+\newcommand{\pp}{\mathbb{P}}
+\newcommand{\hh}{\mathbb{H}}
+\newcommand{\qq}{\mathbb{Q}}
+\newcommand{\zz}{\mathbb{Z}}
+\newcommand{\ff}{\mathbb{F}}
+\newcommand{\kk}{\mathbb{K}}
+\renewcommand{\gg}{\mathbb{G}}
+\newcommand{\nn}{\mathbb{N}}
+\renewcommand{\tt}{\mathbb{T}}
+
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\I}{\mathcal{I}}
+\renewcommand{\H}{\mathcal{H}}
+\newcommand{\fH}{\mathscr{H}}
+\renewcommand{\O}{\mathcal{O}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\renewcommand{\P}{\mathcal{P}}
+\renewcommand{\S}{\mathcal{S}}
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\T}{\mathcal{T}}
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\M}{\mathcal{M}}
+
+\newcommand{\sD}{\mathscr{D}}
+\newcommand{\sE}{\mathscr{E}}
+\newcommand{\sL}{\mathscr{L}}
+\newcommand{\sQ}{\mathscr{Q}}
+
+\newcommand{\p}{\mathfrak{p}}
+\newcommand{\m}{\mathfrak{m}}
+
+\newcommand{\Res}{\text{Res}}
+\newcommand{\ord}{\text{ord}}
+\newcommand{\GL}{\text{GL}}
+\newcommand{\SL}{\text{SL}}
+\newcommand{\PSL}{\text{PSL}}
+\newcommand{\GSp}{\text{GSp}}
+\newcommand{\SO}{\text{SO}}
+\newcommand{\Sp}{\text{Sp}}
+\renewcommand{\sl}{\mathfrak{sl}}
+\newcommand{\PGL}{\text{PGL}}
+\newcommand{\Sym}{\operatorname{Sym}}
+\newcommand{\Supp}{\operatorname{Supp}}
+\newcommand{\Pic}{\operatorname{Pic}}
+\newcommand{\Jac}{\operatorname{Jac}}
+\newcommand{\res}{\operatorname{res}}
+\newcommand{\sm}{\operatorname{sm}}
+
+
+%\newcommand{\Id}{\operatorname{Id}}
+%\newcommand{\rk}{\operatorname{rk}}
+%\newcommand{\td}{\operatorname{td}}
+%\newcommand{\ch}{\operatorname{ch}}
+\newcommand{\Hilb}{\operatorname{Hilb}}
+%\newcommand{\Coh}{\operatorname{Coh}}
+%\newcommand{\Pic}{\operatorname{Pic}}
+\newcommand{\NS}{\operatorname{NS}}
+\newcommand{\Bl}{\operatorname{Bl}}
+
+
+\newcommand{\bound}{\partial}
+\renewcommand{\Im}{\operatorname{Im}}
+\newcommand{\Ast}{\Asterisk}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\Nm}{\operatorname{Nm}}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\Frob}{\operatorname{Frob}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\Ann}{\operatorname{Ann}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ram}{\operatorname{Ram}}
+\newcommand{\rk}{\operatorname{rk}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\gen}{\operatorname{gen}}
+
+\newcommand{\cyc}{\operatorname{cyc}}
+\renewcommand{\top}{{\text{top}}}
+
+\newcommand{\del}{\partial}
+
+\renewcommand{\bar}{\overline}
+
+\newcommand{\fixme}[1]{\noindent{\color{red}FIXME: #1 }}
+
+\newcommand{\isabel}[1]{{\color{purple} ($\spadesuit$ Isabel: #1)}}
+\newcommand{\padma}[1]{{\color{teal} ($\clubsuit$ Padma: #1)}}
+
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{statement}[thm]{Statement}
+\newtheorem{ithm}{Theorem}
+\newtheorem{icor}[ithm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{cond}[thm]{Condition}
+\newtheorem{claim}[thm]{Claim}
+
+\newcommand{\defi}[1]{\textsf{#1}} 
+
+\theoremstyle{definition}
+\newtheorem{defin}[thm]{Definition}
+\newtheorem{example}[thm]{Example}
+\newtheorem{exercise}[thm]{Exercise}
+\newtheorem*{question}{Main Question}
+
+\theoremstyle{remark}
+\newtheorem{rem}{Remark}
+\newtheorem*{skproof}{Sketch of Proof}
+
+
+%\renewcommand\footnotemark{}
+%\renewcommand\footnoterule{}
+
+\title{Plan for ICERM project group}
+\author{Padmavathi Srinivasan}
+\author{Isabel Vogt}
+
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+The purpose of this document is to outline an approach to the problem for the ICERM working group: given a principally polarized abelian surface $A$ over $\qq$ with endomorphism ring $\zz$, return the (provably complete) finite list of primes $\{\ell_1, \dots, \ell_n\}$ for which the Galois representation on the $\ell_i$-torsion points
+\[\rho_{A, \ell_i} \colon G_{\qq} \to \Aut\left(A[\ell_i]\right) = \GSp_{4}(\ff_{\ell_i}) \]
+is not surjective (where we write $G_{\qq}$ for $\Gal\left(\bar{\qq}/\qq\right)$).  
+%(More generally we might want to find all \emph{non-surjective} primes where $\rho_{A, \ell}(G_{\qq})$ is a proper subgroup of $\GSp_{4}(\ff_{\ell_i})$.  If we want, we can think about implementing this after the current project is completed.  The problem of determining reducible primes is the first step in this direction.)
+
+The overarching idea is to test Frobenius elements at primes $p$ of good reduction for $A$.  We can determine the (integral) characteristic polynomial of Frobenius at $p$ by counting points on $A$ over $\ff_{p^r}$ for small $r$.    The reduction of this polynomial modulo $\ell$ gives the characteristic polynomial of the action of the Frobenius element on the $\ell$-torsion points of $A$.  By the Chebotarev density theorem, the images of the Frobenius Galois elements for varying primes $p$ equidistribute over the conjugacy classes of $\rho_{A, \ell}(G_{\qq})$.  In this way, we can sample the elements of this group.
+
+This problem naturally splits into two parts:
+\begin{enumerate}
+\item Find a finite list of primes that provably contains all primes for which the mod $\ell$ representation could be reducible.
+\item Given a prime $\ell$, determine if the mod $\ell$ representation $\rho_{A, \ell}$ is reducible.
+\end{enumerate}
+We will treat these cases separately in two sections.  We begin by reviewing the properties of the characteristic polynomial of Frobenius with a view towards computational aspects.
+
+
+\section{Characteristic polynomials of Frobenius}
+
+Let $A$ be an abelian variety of dimension $g$ defined over $\qq$.
+We will write $T_\ell A$ for the $\ell$-adic Tate module of $A$:
+\[T_\ell A \simeq \varprojlim_n A[\ell^n].\]
+This is a free $\zz_\ell$-module of rank $2g$.
+
+
+Let $p$ be a prime of good reduction for $A$.  We will write $\Frob_p$ for the image of a Frobenius element at $p$ in $G_\qq$ acting on $T_\ell A$.  (This is well-defined up to conjugacy.)  The theoretical result underlying this entire approach is the following.
+
+\begin{thm}[Deligne (is there a better ref?)]\label{integrality}
+Let $A$ be an abelian variety defined over $\qq$ and let $p$ be a prime of good reduction for $A$.  There exists a monic integral polynomial $P_p(t) \in \zz[t]$ of degree $2g$ with constant coefficient $p^g$ such that for any $\ell \neq p$, $P_p(t)$ is the characteristic polynomial of the action of $\Frob_p$ on $T_\ell A$.
+\end{thm}
+
+There is further structure.  The nondegenerate Weil pairing gives an isomorphism (of Galois modules):
+\[T_\ell A \simeq \left(T_\ell A\right)^\vee \otimes_{\zz_\ell} \zz_\ell(1).\]
+The Galois character acting on $\zz_\ell(1)$ is the \defi{$\ell$-adic cyclotomic character}, which we denote by $\cyc_\ell$.  
+The integral characteristic polynomial for the action of $\Frob_p$ on $\zz_\ell(1)$ is simply $t-p$.  The integral characteristic polynomial for the action of $\Frob_p$ on $\left(T_\ell A\right)^\vee$ is the reversed polynomial
+\[P^\vee_p(t) = P_p(1/t)\cdot t^{2g}/p^g \]
+whose roots are the inverses of the roots of $P_p(t)$.
+
+The structure of the nondegenerate Weil pairing gives that the (complex) roots of $P_p(t)$ come in pairs
+\[\alpha, \frac{p}{\alpha} \]
+that multiply to $p$.
+
+Let us now specialize to the case that $A$ has dimension $2$.
+Suppose that $\alpha$, $\beta$, $p/\alpha$, and $p/\beta$ are the complex roots of the $P_p(t)$.  By Theorem \ref{integrality}, $P_p(t) \mod{\ell}$ is the characteristic polynomial of the action of $\Frob_p$ on $A[\ell]$.  We therefore have the following necessary condition:
+
+\begin{cond}\label{easy_necessary}
+If $A[\ell]$ is reducible, then $P_p(t)$ is not irreducible modulo $\ell$.
+\end{cond}
+
+Our goal in Section \ref{finite_list} will be to deduce more useful necessary conditions that will allow us to reduce to a finite list of possible $\ell$.  Our goal in Section \ref{test_ell} will, essentially, be to use Condition \ref{easy_necessary} to test if $A[\ell]$ is indeed reducible.  In that section we must understand when this condition fails to be sufficient (i.e., solve a local-global problem).
+
+
+The polynomials $P_p(t)$ are computationally accessible by counting points on $A$ over $\ff_{p^r}$ for small $r$.  \isabel{This should be expanded some.}  
+By the Grothendieck--Lefschetz trace formula (Section 5.4 of curves.pdf), if $A= \Jac(X)$, and if $\lambda_1,\lambda_2,\ldots,\lambda_{2g}$ are the roots of $P_p(t)$, then
+\[ \# X(\ff_{p^r}) = p^r+1-\sum_{i=1}^{2g} \lambda_i^r. \]
+
+\padma{Sage Implementation: \\
+
+https://doc.sagemath.org/html/en/reference/curves/sage/schemes/hyperelliptic\_curves/hyperelliptic\_finite\_field.html \\
+
+http://www-math.mit.edu/~poonen/papers/curves.pdf }
+% Sections 3.7 and 4.2.2 might also help
+
+\section{Finding a finite set containing reducible primes}\label{finite_list}
+
+To set some notation, suppose that $\rho_{A, \ell}$ is reducible.  In other words, the representation $A[\ell]$ is an extension
+\begin{equation}\label{red_extn} 0 \to X_\ell \to A[\ell] \to Y_\ell \to 0\end{equation}
+of the (quotient) representation $Y_\ell$ by the (sub) representation $X_\ell$.
+In other words, in an appropriate basis, the image of $\rho_{A, \ell}$ is block diagonal:
+
+\begin{center}
+\begin{tikzpicture}[scale=.9]
+
+\draw[thick] (-2, 2) -- (-2, -2);
+\draw[thick] (2, 2) -- (2, -2);
+
+\draw (-1, 2) -- (-1, -2);
+\draw (-2, 1) -- (2, 1);
+
+
+\node at (.5, -.5) {$Y_{\ell}$};
+
+\draw[snake=brace, raise snake=5pt] (-2, 2) -- (-1, 2);
+\node at (-1.5, 1.5) {$X_{\ell}$};
+\node at (-1.5, 2.5) {$x$};
+
+\draw[snake=brace, mirror snake, raise snake=5pt] (-1, -2) -- (2, -2);
+\node at (.5, -.5) {$Y_{\ell}$};
+\node at (.5, -2.5) {$y$};
+
+\end{tikzpicture}
+\end{center}
+
+We will write $x$ for the dimension of the subrepresentation $X_\ell$ and $y$ for the dimension of the quotient representation $Y_\ell$.
+
+The key result that will allow us to constrain the possible reducible $\ell$ is the following Lemma (see Serre for the case of elliptic curves):
+
+\begin{lem}
+Suppose that $\ell$ is a prime of semistable reduction for $A$.  Let $\cyc_\ell$ be the mod $\ell$-cyclotomic character.
+In the above setup, there exist integers $0 \leq u \leq 120x$ and $0 \leq v \leq 120 y$, both divisible by $120$, such that $u + v = 240$ and
+\begin{align*}
+\left( \det X_{\ell} \right)^{120} &= \left(\cyc_\ell\right)^u, \\
+\left( \det Y_{\ell} \right)^{120} &= \left(\cyc_\ell\right)^v.
+\end{align*}
+\end{lem}
+\begin{skproof}
+(REFERENCES ARE IN ERIC AND MITKA'S PAPER... I WILL FIND THEM.) This follows from the following two results:
+\begin{enumerate}
+\item (Grothendieck) An abelian variety $A$ has semistable reduction at $p \neq \ell$ if and only if the action of inertia at $p$ on $T_\ell A$ is unipotent.
+\item (Raynaud) Given a finite flat group scheme killed by $\ell$ over $\qq_\ell$, determines the possibilities for the action of inertia at $\ell$ on the determinant.  Basically, the only possibility is a power of the cyclotomic character (where the power is at most the dimension).
+\end{enumerate}
+Since there are no unramified characters of $G_\qq$, it suffices to understand the determinant characters on the inertia groups $I_p$ for all primes $p$.
+
+By (fixme), every abelian surface obtains semistable reduction over an extension of degree at most $120$.  Therefore, the $120$th power of every inertial element for $p\neq \ell$ acts trivially on 
+\qed
+\end{skproof}
+
+In order to use this Lemma.  There are two cases to consider:
+\begin{enumerate}
+\item\label{odd} One of $x$ or $y$ is $1$, or
+\item\label{even} Both $x$ and $y$ are $2$.
+\end{enumerate}
+
+In case \eqref{odd}, let us assume that $x=1$.  Then for any good prime $p$, the integral characteristic polynomial of Frobenius at $p$ splits off a linear factor modulo $\ell$ (corresponding to the action on the subrepresentation $X_\ell$).  Furthermore, by the Lemma, either
+\[X_{\ell}^{120} = 1, \qquad \text{or} \qquad X_{\ell}^{120} = \left(\cyc_\ell\right)^{120}.\]
+We will use the fact that we know how the characteristic polynomial of Frobenius at $p$ acts on the $1$-dimensional $\ff_\ell$-representation whose Galois character is either $1$ or $\cyc_\ell^{120}$; namely, by either $1$ or multiplication by $p^{120}$ (modulo $\ell$).
+Hence, for any good prime $p$, the characteristic polynomial of Frobenius at $p$ has a root whose $120$th power is either $1$ or $p^{120}$ modulo $\ell$.
+Given the (integral) characteristic polynomial $P_p(t)$ for Frobenius at $p$, using linear algebra of symmetric functions, we can write down an integral polynomial $P_p^{(120)}(t)$ whose roots are the $120$th powers of the roots of $P_p(t)$.  By the Weil conjectures, the roots of $P_p(t)$ have absolute values $p^{1/2}$; hence the roots of $P^{(120)}(t)$ have absolute value $p^{60}$.  Therefore both $P_p^{(120)}(1)$ and $P_p^{(120)}(p^{120})$ are \emph{non-zero} integers.  And if we are in this case ($A[\ell]$ is reducible with either $1$-dimensional sub or quotient) then $\ell$ divides the nonzero quantity $P_p^{(120)}(1)\cdot P_p^{(120)}(p^{120})$.
+
+Now let us assume that $A[\ell]$ does not have a subrepresentation of odd dimension (and hence we are in case \eqref{even}).  This is more subtle, as we now explain.  We want to use the fact the $120$th power of the product of the two eigenvalues of Frobenius at $p$ acting on $X_\ell$ (or $Y_\ell$) multiply to $1$, $p^{120}$ or $p^{240}$ modulo $\ell$.  The issue is that the nondegeneracy of the Weil pairing guarantees the existence of two pairs of roots of $P_p(t)$ that \emph{always} multiply to $p$ (and hence the $120$th power of their product is $p^{120}$ \emph{integrally}).  We therefore need more care in this case.
+
+By the nondegeneracy of the Weil pairing, we have that
+\begin{equation}\label{weil_pair}A[\ell] \simeq A[\ell]^\vee \otimes \cyc_\ell.\end{equation}
+If $A[\ell]$ is reducible but indecomposable (e.g., equation \eqref{red_extn} is non-split), then $X_{\ell}$ is the unique subrepresentation of $A[\ell]$ and $Y_\ell^\vee \otimes \cyc_{\ell}$ is the unique subrepresentation of $A[\ell]^\vee \otimes \cyc_\ell$.  Hence
+\[ X_\ell \simeq Y_\ell^\vee \otimes \cyc_\ell.\]
+Otherwise $A[\ell] \simeq X_\ell \oplus Y_\ell$ and so the nondegeneracy of the Weil pairing \eqref{weil_pair} gives
+\[X_\ell \oplus Y_\ell \simeq \left(X_\ell^\vee \otimes \cyc_\ell\right) \oplus \left(Y_\ell^\vee \otimes \cyc_\ell\right).\]
+Therefore either:
+\begin{enumerate}[(a)]
+\item $X_\ell \simeq Y_\ell^\vee \otimes \cyc_\ell$ and $Y_\ell\simeq X_\ell^\vee \otimes \cyc_\ell$ (the only possibility if $A[\ell]$ is indecomposable), or 
+\item $X_\ell \simeq X_\ell^\vee \otimes \cyc_\ell$ and $Y_\ell \simeq Y_\ell^\vee \otimes \cyc_\ell$.
+\end{enumerate}
+
+Suppose that $\alpha$, $\beta$, $p/\alpha$, and $p/\beta$ are the complex roots of the $P_p(t)$.  By counting points we will be able to compute
+\begin{align*}
+t &\colonequals \alpha + \beta + \frac{p}{\alpha} + \frac{p}{\beta} \\
+s &\colonequals \alpha^2 + \beta^2 + \frac{p^2}{\alpha^2} + \frac{p^2}{\beta^2} 
+\end{align*}
+
+In case (a) above, $\alpha$ and $\beta$ are the roots of the action of Frobenius at $p$ on $X_\ell$.  We can then form the degree $4$ polynomial whose roots are the products of the pairs of roots that don'
+t automatically multiply to $p$ can be expanded to be:
+\[Q_p(t) \colonequals x^4 - \left( \frac{t^2 - s - 4p}{2} \right) x^3 + (2p^2 + ps)x^2 - p^2\left( \frac{t^2 - s - 4p}{2} \right)x + p^4.\]
+We can now repeat the previous idea with $Q_p^{(120)}(t)$ evaluated on $1$, $p^{120}$ and $p^{240}$.
+
+In case (b), this will not work since $\alpha$ and $p/\alpha$ are the roots expressing the action on $X_\ell$, and we can use the modularity theorem.
+
+We turn this into an algorithm to determine $\ell$ as follows:
+\begin{enumerate}
+\item
+\item
+\end{enumerate}
+
+
+\section{Determining if a representation is reducible}\label{test_ell}
+
+
+
+
+
+
+\end{document}
