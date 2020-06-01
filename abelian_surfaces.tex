@@ -166,8 +166,8 @@ The overarching idea is to test Frobenius elements at primes $p$ of good reducti
 
 This problem naturally splits into two parts:
 \begin{enumerate}
-\item Find a finite list of primes that provably contains all primes for which the mod $\ell$ representation could be reducible.
-\item Given a prime $\ell$, determine if the mod $\ell$ representation $\rho_{A, \ell}$ is reducible.
+\item Find a finite list of primes that provably contains all primes for which the mod $\ell$ representation could be non-surjective.
+\item Given a prime $\ell$, determine if the mod $\ell$ representation $\rho_{A, \ell}$ is not surjective.
 \end{enumerate}
 We will treat these cases separately in two sections.  We begin by reviewing the properties of the characteristic polynomial of Frobenius with a view towards computational aspects.
 
@@ -261,14 +261,14 @@ In the above setup, there exist integers $0 \leq u \leq 120x$ and $0 \leq v \leq
 \end{align*}
 \end{lem}
 \begin{skproof}
-(REFERENCES ARE IN ERIC AND MITKA'S PAPER... I WILL FIND THEM.) This follows from the following two results:
+\isabel{We can blackbox this.  I can also find references later.} This follows from the following two results:
 \begin{enumerate}
 \item (Grothendieck) An abelian variety $A$ has semistable reduction at $p \neq \ell$ if and only if the action of inertia at $p$ on $T_\ell A$ is unipotent.
 \item (Raynaud) Given a finite flat group scheme killed by $\ell$ over $\qq_\ell$, determines the possibilities for the action of inertia at $\ell$ on the determinant.  Basically, the only possibility is a power of the cyclotomic character (where the power is at most the dimension).
 \end{enumerate}
 Since there are no unramified characters of $G_\qq$, it suffices to understand the determinant characters on the inertia groups $I_p$ for all primes $p$.
 
-By (fixme), every abelian surface obtains semistable reduction over an extension of degree at most $120$.  Therefore, the $120$th power of every inertial element for $p\neq \ell$ acts trivially on 
+Every abelian surface obtains semistable reduction over an extension of degree at most $120$.  Therefore, the $120$th power of every inertial element for $p\neq \ell$ acts trivially on 
 \qed
 \end{skproof}
 
@@ -309,7 +309,11 @@ t automatically multiply to $p$ can be expanded to be:
 \[Q_p(t) \colonequals x^4 - \left( \frac{t^2 - s - 4p}{2} \right) x^3 + (2p^2 + ps)x^2 - p^2\left( \frac{t^2 - s - 4p}{2} \right)x + p^4.\]
 We can now repeat the previous idea with $Q_p^{(120)}(t)$ evaluated on $1$, $p^{120}$ and $p^{240}$.
 
-In case (b), this will not work since $\alpha$ and $p/\alpha$ are the roots expressing the action on $X_\ell$, and we can use the modularity theorem.
+In case (b), this will not work since $\alpha$ and $p/\alpha$ are the roots expressing the action on $X_\ell$.  Write 
+\[F_p(t) \colonequals (t - (\alpha + p/\alpha))(t - (\beta + p/\beta)).\]
+We can now use the modularity theorem (Serre's conjecture).  This says that $X_\ell$ is the mod $\ell$ Galois representation arising from a cusp form of weight $2$ and level dividing $\ell$ times the conductor of the abelian surface.  Let $\Sigma$ be the set of all possible cusp forms $f$.  Write $a_p(f)$ for the eigenvalue of the Hecke operator $T_p$ for $f$.  Therefore
+\[\ell \mid \prod_{f \in \Sigma} F_p(a_p(f)).\]
+This again gives us a nontrivial condition on $\ell$.
 
 We turn this into an algorithm to determine $\ell$ as follows:
 \begin{enumerate}
