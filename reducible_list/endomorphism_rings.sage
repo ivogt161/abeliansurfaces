@@ -29,7 +29,7 @@ def is_abs_endo_ring_trivial(f):
 
     C = HyperellipticCurve(f)
     reduction_data = genus2reduction(0,f)
-    the_conductor = reduction_data.the_conductor
+    the_conductor = reduction_data.conductor
     
     running_triples = []
 
