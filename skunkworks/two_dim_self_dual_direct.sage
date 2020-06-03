@@ -45,6 +45,7 @@ def basis_of_eigenforms_of_level(t):
     return CuspForms(t).newforms(names='a')
 
 def left_hand_of_3_8(t,p,f):
+    """left hand of formula 3.8 in Dieulefait's paper"""
     C_p = HyperellipticCurve(f).base_extend(GF(p))
     Pol_p = R(C_p.frobenius_polynomial())
     polys_in_prod = [(x^2 - f[p]*x + p) for f in basis_of_eigenforms_of_level(t)]
