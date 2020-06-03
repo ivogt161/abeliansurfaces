@@ -68,7 +68,7 @@ def rule_out_1_plus_3_via_Frob_p(p, t, s, M):
 	return gcd(M, P12(1)*P12(p^120))
 
 def rule_out_2_plus_2_nonselfdual_via_Frob_p(p, t, s, M):
-	p, tnew, snew, alphanew = power_roots12(roots_pairs_not_p((p, t, s, M)))
+	p, tnew, snew, alphanew = power_roots12(roots_pairs_not_p((p, t, s, 1)))
 	Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
 	return gcd(M, Pnew(1)*Pnew(p^120)*Pnew(p^240))
 
