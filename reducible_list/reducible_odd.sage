@@ -65,25 +65,26 @@ def rule_out_1_plus_3_via_Frob_p(p, t, s, M):
 	p, t12, s12, alpha12 = power_roots12((p, t, s, 1))
 	P12(x) = x^4 - t12*x^3 + s12*x^2 - p^alpha12*t12*x + p^(2*alpha12)
 	#print P12(1), P12(p^120)
-	return gcd(M, P12(1)*P12(p^120))
+	return gcd(M, p*P12(1))
 
 def rule_out_2_plus_2_nonselfdual_via_Frob_p(p, t, s, M):
 	p, tnew, snew, alphanew = power_roots12(roots_pairs_not_p((p, t, s, 1)))
 	Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-	return gcd(M, Pnew(1)*Pnew(p^120)*Pnew(p^240))
+	return gcd(M, p*Pnew(1))
 
 #very minimal working example
 x = QQ['x'].gen()
 f = x^6 - x^3 - x + 1
 C = HyperellipticCurve(f,0)
 Naway2 = genus2reduction(0,f).conductor
-p=11
-Cp = C.change_ring(GF(p))
-fp = Cp.frobenius_polynomial()
-tp = - fp.coefficients()[3]
-sp = fp.coefficients()[2]
-M0 = 0
+M13 = 0
+M22 = 0
 for p in prime_range(7, 100):
 	if p != 23:
-		M0 = rule_out_1_plus_3_via_Frob_p(p, tp, sp, M0)
-M0
+		Cp = C.change_ring(GF(p))
+		fp = Cp.frobenius_polynomial()
+		tp = - fp.coefficients(sparse=false)[3]
+		sp = fp.coefficients(sparse=false)[2]
+		M13 = rule_out_1_plus_3_via_Frob_p(p, tp, sp, M13)
+		M22 = rule_out_2_plus_2_nonselfdual_via_Frob_p(p, tp, sp, M22)
+print M13, M22
