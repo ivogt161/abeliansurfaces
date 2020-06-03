@@ -103,14 +103,17 @@ def maximal_square_divisor(N):
 
 #very minimal working example
 x = QQ['x'].gen()
-f = x^6 - x^3 - x + 1
-C = HyperellipticCurve(f,0)
-Naway2 = genus2reduction(0,f).conductor
+#f = x^6 - x^3 - x + 1
+f = 3*x^5+9*x^4+14*x^3+39*x^2+16
+h = x^3
+C = HyperellipticCurve(f,h)
+Naway2 = genus2reduction(h,f).conductor
 d = maximal_square_divisor(2^6*Naway2)
+print d
 M13 = 0
 M22 = 0
-for p in prime_range(7, 100):
-	if p != 23:
+for p in prime_range(3, 100):
+	if Naway2 % p != 0:
 		f = Integers(d)(p).multiplicative_order()
 		c = gcd(f, 120)
 		Cp = C.change_ring(GF(p))
