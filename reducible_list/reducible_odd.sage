@@ -53,6 +53,23 @@ def power_roots5((p, t, s, alpha)):
 def power_roots12((p, t, s, alpha)):
 	return power_roots2(power_roots2(power_roots2(power_roots3(power_roots5((p,t,s,alpha))))))
 
+
+#put these together to do the power actually needed
+def power_roots((c, p, t, s, alpha)):
+
+	ptsa = (p, t, s, alpha)
+	
+	while c % 2 == 0:
+		c, ptsa = c/2, power_roots2(ptsa)
+	
+	while c % 3 == 0:
+		c, ptsa = c/3, power_roots3(ptsa)
+	
+	while c % 5 == 0:
+		c, ptsa = c/5, power_roots5(ptsa)
+	
+	return ptsa
+
 #given a quartic f whose roots multiply to p^alpha in pairs,
 #returns the quartic whose roots are the products of roots
 #of f that DO NOT multiply to p^alpha
@@ -61,30 +78,45 @@ def roots_pairs_not_p((p, t, s, alpha)):
 
 #t and s are the first and second elementary symmetric functions in the
 #roots of the characteristic polynomial of Frobenius at p
-def rule_out_1_plus_3_via_Frob_p(p, t, s, M):
-	p, t12, s12, alpha12 = power_roots12((p, t, s, 1))
+def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M):
+	p, t12, s12, alpha12 = power_roots((c, p, t, s, 1))
 	P12(x) = x^4 - t12*x^3 + s12*x^2 - p^alpha12*t12*x + p^(2*alpha12)
 	#print P12(1), P12(p^120)
 	return gcd(M, p*P12(1))
 
-def rule_out_2_plus_2_nonselfdual_via_Frob_p(p, t, s, M):
-	p, tnew, snew, alphanew = power_roots12(roots_pairs_not_p((p, t, s, 1)))
+def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M):
+	p, tnew, snew, alphanew = roots_pairs_not_p((p, t, s, 1))
+	p, tnew, snew, alphanew = power_roots((c, p, tnew, snew, alphanew))
 	Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-	return gcd(M, p*Pnew(1))
+	return gcd(M, p*Pnew(1)*Pnew(p^c))
+
+
+#copied from Zev's code
+def maximal_square_divisor(N):
+        PP = prime_factors(N)
+        n = 1
+        for p in PP:
+                n = n * p^(floor(valuation(N,p)/2));
+
+        return n
+
 
 #very minimal working example
 x = QQ['x'].gen()
 f = x^6 - x^3 - x + 1
 C = HyperellipticCurve(f,0)
 Naway2 = genus2reduction(0,f).conductor
+d = maximal_square_divisor(2^6*Naway2)
 M13 = 0
 M22 = 0
 for p in prime_range(7, 100):
 	if p != 23:
+		f = Integers(d)(p).multiplicative_order()
+		c = gcd(f, 120)
 		Cp = C.change_ring(GF(p))
 		fp = Cp.frobenius_polynomial()
 		tp = - fp.coefficients(sparse=false)[3]
 		sp = fp.coefficients(sparse=false)[2]
-		M13 = rule_out_1_plus_3_via_Frob_p(p, tp, sp, M13)
-		M22 = rule_out_2_plus_2_nonselfdual_via_Frob_p(p, tp, sp, M22)
+		M13 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M13)
+		M22 = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M22)
 print M13, M22
