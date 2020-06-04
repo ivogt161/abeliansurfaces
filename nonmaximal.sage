@@ -7,6 +7,10 @@ action on J_C[ell] is nonmaximal.
 
 Code is organized according to maximal subgroups of GSp_4"""
 
+# Imports
+
+import ast
+
 
 #########################################################
 #                            #
@@ -250,6 +254,14 @@ def set_up_cuspidal_spaces(N):
     return [(CuspForms(d),0) for d in D]
 
 
+def reconstruct_large_hecke_poly_from_small(cusp_form_space, p):
+    """Implement Zev and Joe Wetherell's idea, or the complex thingy
+        TODO: implement. Ensure it's the reverse poly.
+    """
+
+    return cusp_form_space.hecke_polynomial(p)
+
+
 def get_hecke_characteristic_polynomial(cusp_form_space, p, load=False):
     """This should return the left hand side of Equation 3.8.
 
@@ -264,14 +276,27 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, load=False):
     """
 
     if load == False:
-        # This is wrong currently; TODO use the hack_poly stuff in skunkworks
-        # to give a quick fix
-        return cusp_form_space.hecke_polynomial(p)
+        return reconstruct_large_hecke_poly_from_small(cusp_form_space, p)
 
-    # else, get the poly from Drew's text file (that massive 22mb file in top dir)
-    # TODO
+    # else, get the poly from Drew's text file
 
-    return cusp_form_space.hecke_polynomial(p)  
+    look_up_key = "{}:{}:".format(cusp_form_space.level(), p)
+    found = False
+
+    with open('/home/barinder/Documents/sage_projects/abeliansurfaces/gamma0_wt2_hecke_lpolys_1000.txt') as coeff_table:
+        for line in coeff_table:
+            if line.startswith(look_up_key):
+                coeffs_of_hecke_charpoly = ast.literal_eval(line.split(":")[-1])
+                found=True
+                break
+    
+    if found:
+        f = sum(coeffs_of_hecke_charpoly[i]*x^i for i in range(len(coeffs_of_hecke_charpoly)))
+    else:
+        print("Warning: Didn't find the polynomial in the database.\nReconstructing on the fly...")
+        f = reconstruct_large_hecke_poly_from_small(cusp_form_space, p)
+
+    return f  
 
 
 # f will be an eigenform of level N_1, but we don't need to know that
