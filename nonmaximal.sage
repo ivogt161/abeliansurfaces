@@ -255,11 +255,14 @@ def set_up_cuspidal_spaces(N):
 
 
 def reconstruct_large_hecke_poly_from_small(cusp_form_space, p):
-    """Implement Zev and Joe Wetherell's idea, or the complex thingy
-        TODO: implement. Ensure it's the reverse poly.
-    """
+    """Implement Zev and Joe Wetherell's idea, or the complex thingy"""
 
-    return cusp_form_space.hecke_polynomial(p)
+    char_T_x = R(cusp_form_space.hecke_polynomial(p))
+    S.<a,b> = QQ[]
+    char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
+    substitute_poly = char_T_a_b(a=1+p*b^2)
+
+    return R(substitute_poly(a=0,b=x))
 
 
 def get_hecke_characteristic_polynomial(cusp_form_space, p, load=False):
@@ -296,7 +299,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, load=False):
         print("Warning: Didn't find the polynomial in the database.\nReconstructing on the fly...")
         f = reconstruct_large_hecke_poly_from_small(cusp_form_space, p)
 
-    return f  
+    return f
 
 
 # f will be an eigenform of level N_1, but we don't need to know that
@@ -331,7 +334,7 @@ def find_nonmaximal_primes(C, N):
     #M32B = 0
     M1p3 = 0
     M2p2nsd = 0
-    #MCusp = set_up_cuspidal_spaces(N)
+    MCusp = set_up_cuspidal_spaces(N)
     MQuad = set_up_quadratic_chars(N)
     
     d = maximal_square_divisor(N)
@@ -340,6 +343,7 @@ def find_nonmaximal_primes(C, N):
             if N % p != 0:
                 Cp = C.change_ring(FiniteField(p))
                 fp = Cp.frobenius_polynomial()
+                fp_rev = Cp.zeta_function().numerator()
 
                 #M31 = rule_out_one_dim_ell(p,fp,d,M31);
                 #M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
@@ -354,18 +358,18 @@ def find_nonmaximal_primes(C, N):
                 M1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3)
                 M2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd)
 
-                #MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp)
+                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
     ell_red_easy = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
 
-    #ell_red_cusp = [(S.level,prime_factors(M)) for S,M in MCusp]
+    ell_red_cusp = [(S.level,prime_factors(M)) for S,M in MCusp]
     #does't include 2 and 3
     ell_irred = [(phi,prime_factors(M)) for phi,M in MQuad]
 
-    return ell_red_easy, ell_irred
+    return ell_red_easy, ell_red_cusp, ell_irred
 
 # Test code
 R.<x> = PolynomialRing(QQ)
@@ -375,7 +379,8 @@ h = 1
 C = HyperellipticCurve(f,h=h)
 N = poor_mans_conductor(C)
 
-find_nonmaximal_primes(C, N)
+answer=find_nonmaximal_primes(C, N)
+print(answer)
 
 #MM = set_up_quadratic_chars(N)
 #for p in prime_range(100):
