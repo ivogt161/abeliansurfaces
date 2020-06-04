@@ -11,7 +11,6 @@ Code is organized according to maximal subgroups of GSp_4"""
 
 import ast
 
-
 #########################################################
 #                            #
 #                   Auxiliary functions            #
@@ -255,7 +254,7 @@ def set_up_cuspidal_spaces(N):
 
 
 def reconstruct_large_hecke_poly_from_small(cusp_form_space, p):
-    """Implement Zev and Joe Wetherell's idea, or the complex thingy"""
+    """Implement Zev and Joe Wetherell's idea"""
 
     char_T_x = R(cusp_form_space.hecke_polynomial(p))
     S.<a,b> = QQ[]
@@ -362,14 +361,22 @@ def find_nonmaximal_primes(C, N):
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
-
+    
+    # we will always include 2, 3, and the non-semistable primes. Eventually
+    # we'll do this properly, importing non_semistable_primes.py, but for now
+    # do a quick thing
+    non_maximal_primes = {2,3}.union(set([p[0] for p in list(N.factor()) if p[1]>1]))
+    
     ell_red_easy = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
+    non_maximal_primes = non_maximal_primes.union(set([p for j in ell_red_easy for p in j]))
 
-    ell_red_cusp = [(S.level,prime_factors(M)) for S,M in MCusp]
-    #does't include 2 and 3
+    ell_red_cusp = [(S.level(),prime_factors(M)) for S,M in MCusp]
+    non_maximal_primes = non_maximal_primes.union(set([p for a,j in ell_red_cusp for p in j]))
+
     ell_irred = [(phi,prime_factors(M)) for phi,M in MQuad]
+    non_maximal_primes = non_maximal_primes.union(set([p for a,j in ell_irred for p in j]))
 
-    return ell_red_easy, ell_red_cusp, ell_irred
+    return non_maximal_primes
 
 # Test code
 R.<x> = PolynomialRing(QQ)
