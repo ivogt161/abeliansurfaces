@@ -250,10 +250,34 @@ def set_up_cuspidal_spaces(N):
     return [(CuspForms(d),0) for d in D]
 
 
+def get_hecke_characteristic_polynomial(cusp_form_space, p, load=False):
+    """This should return the left hand side of Equation 3.8.
+
+    Args:
+        cusp_form_space ([type]): a space of weight 2 cuspforms with trivial 
+        Nebentypus
+        p (int): prime number
+
+    Returns:
+        [pol]: an integer polynomial of twice the dimension of the cuspform
+               space
+    """
+
+    if load == False:
+        # This is wrong currently; TODO use the hack_poly stuff in skunkworks
+        # to give a quick fix
+        return cusp_form_space.hecke_polynomial(p)
+
+    # else, get the poly from Drew's text file (that massive 22mb file in top dir)
+    # TODO
+
+    return cusp_form_space.hecke_polynomial(p)  
+
+
 # f will be an eigenform of level N_1, but we don't need to know that
 def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M):
     if M != 1:
-        Tp = S.hecke_polynomial(p)
+        Tp = get_hecke_characteristic_polynomial(S,p)
         return gcd(M,p*fp.resultant(Tp))
     else:
         return M
@@ -305,7 +329,7 @@ def find_nonmaximal_primes(C, N):
                 M1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3)
                 M2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd)
 
-                #MCusp = rule_out_cuspidals_spaces_using_Frob_p(p,fp,MCusp)
+                #MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
