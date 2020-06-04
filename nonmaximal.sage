@@ -94,6 +94,7 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
 
 
 #Zev's direct implementation of what is in Dieulefait SS 3.1 and 3.2
+#Warning: some bugs because the conductor used here is wrong at 2
 def rule_out_one_dim_ell(p,fp,d,M):
 	if M != 1:
 		f = Integers(d)(p).multiplicative_order()
@@ -245,10 +246,11 @@ def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC):
 
 
 def find_nonmaximal_primes(C, N):
+
 	#N = poor_mans_conductor(C)
-	M31 = 0
-	M32A = 0
-	M32B = 0
+	#M31 = 0
+	#M32A = 0
+	#M32B = 0
 	M1p3 = 0
 	M2p2nsd = 0
 	#MCusp = set_up_cuspidal_spaces(N)
@@ -261,9 +263,9 @@ def find_nonmaximal_primes(C, N):
         		Cp = C.change_ring(FiniteField(p))
         		fp = Cp.frobenius_polynomial()
 
-			M31 = rule_out_one_dim_ell(p,fp,d,M31);
-			M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
-			M32B = rule_out_related_two_dim_ell_case2(p,fp,d,M32B)
+			#M31 = rule_out_one_dim_ell(p,fp,d,M31);
+			#M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
+			#M32B = rule_out_related_two_dim_ell_case2(p,fp,d,M32B)
 
 			f = Integers(d)(p).multiplicative_order()
 			c = gcd(f, 120)
@@ -277,15 +279,15 @@ def find_nonmaximal_primes(C, N):
 			#MCusp = rule_out_cuspidals_spaces_using_Frob_p(p,fp,MCusp)
 			MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
-	ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
+	#ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
-	ell_red_easy2 = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
+	ell_red_easy = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
 
 	#ell_red_cusp = [(S.level,prime_factors(M)) for S,M in MCusp]
 	#does't include 2 and 3
 	ell_irred = [(phi,prime_factors(M)) for phi,M in MQuad]
 
-	return ell_red_easy, ell_red_easy2, ell_irred
+	return ell_red_easy, ell_irred
 
 # Test code
 R.<x> = PolynomialRing(QQ)
