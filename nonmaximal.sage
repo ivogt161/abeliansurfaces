@@ -282,7 +282,7 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
     substitute_poly = char_T_a_b(a=b^2+p)
 
-    return R(substitute_poly(char_T_x.parent().0,1))
+    return R(substitute_poly(1,char_T_x.parent().0))
 
 
 def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
@@ -368,7 +368,7 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
     
     d = maximal_square_divisor(N)
 
-    for p in prime_range(100):
+    for p in prime_range(1000):
             if N % p != 0:
                 Cp = C.change_ring(FiniteField(p))
                 fp = Cp.frobenius_polynomial()
@@ -390,12 +390,13 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
                 MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp, coeff_table = DB)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
+
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
     
     # we will always include 2, 3, and the non-semistable primes. Eventually
     # we'll do this properly, importing non_semistable_primes.py, but for now
     # do a quick thing
-    non_maximal_primes = {2,3}.union(set([p[0] for p in list(N.factor()) if p[1]>1]))
+    non_maximal_primes = {2,3,5,7}.union(set([p[0] for p in list(N.factor()) if p[1]>1]))
     
     ell_red_easy = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
     non_maximal_primes = non_maximal_primes.union(set([p for j in ell_red_easy for p in j]))
@@ -421,9 +422,9 @@ R.<x> = PolynomialRing(QQ)
 
 
 f = -x^6 + 6*x^5 + 3*x^4 + 5*x^3 + 23*x^2 - 3*x + 5
-C = HyperellipticCurve(f,h=h)
-answer=find_nonmaximal_primes(C, 279936)
-print(answer)
+C = HyperellipticCurve(f,0)
+#answer=find_nonmaximal_primes(C, 279936)
+#print(answer)
 
 answer=find_nonmaximal_primes(C, 279936,coeff_table = 'gamma0_wt2_hecke_lpolys_1000.txt')
 print(answer)
