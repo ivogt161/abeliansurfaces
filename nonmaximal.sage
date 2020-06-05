@@ -10,7 +10,7 @@ Code is organized according to maximal subgroups of GSp_4"""
 # Imports
 
 import ast
-import linecache
+import pandas as pd
 
 #########################################################
 #                            #
@@ -251,24 +251,39 @@ def special_divisors(N):
     D.reverse()
     return D
 
-def create_polynomial_database(fname, MaxN = 1000, MaxP = 100):
-    DB = [[R(1) for j in range(MaxP+1)] for i in range(MaxN+1)]
 
-    with open(fname) as coeff_table:
-        for line in coeff_table:
-            flds = line.split(":")
-            coeffs = ast.literal_eval(flds[2])
-            coeffs.reverse()
-            DB[ast.literal_eval(flds[0])][ast.literal_eval(flds[1])] = sum([coeffs[i]*(R.0)^i for i in range(len(coeffs))])
-    
-    return DB
+def create_polynomial_database(path_to_datafile, levels_of_interest):
+    # DB = [[R(1) for j in range(MaxP+1)] for i in range(MaxN+1)]
+
+    # with open(path_to_datafile) as coeff_table:
+    #     for line in coeff_table:
+    #         flds = line.split(":")
+    #         coeffs = ast.literal_eval(flds[2])
+    #         coeffs.reverse()
+    #         DB[ast.literal_eval(flds[0])][ast.literal_eval(flds[1])] = sum([coeffs[i]*(R.0)^i for i in range(len(coeffs))])
+
+    # return DB
+
+    df = pd.read_csv(path_to_datafile, sep=":", header=None, names=["N", "p", "coeffs"])
+    actual_levels_of_interest = [i for i,j in levels_of_interest]
+    df_relevant = df.loc[df["N"].isin(actual_levels_of_interest)].copy()
+
+    df_relevant["coeffs"] = df_relevant["coeffs"].apply(ast.literal_eval)
+
+    return df_relevant
 
 
-def set_up_cuspidal_spaces(N, coeff_table = '' ):
-    if len(coeff_table) > 0:
-        DB = create_polynomial_database(coeff_table)
-        return [(d,0) for d in divisors(N) if d <= sqrt(N)], DB
+def set_up_cuspidal_spaces(N, path_to_datafile=None):
+    if path_to_datafile is not None:
+        levels_of_interest = [(d,0) for d in divisors(N) if d <= sqrt(N)]
+        
+        # There are no modular forms of level < 11
+        bad_levels = [(i,0) for (i,0) in levels_of_interest if i in range(11)]
 
+        levels_of_interest = [z for z in levels_of_interest if z not in bad_levels]
+
+        DB = create_polynomial_database(path_to_datafile, levels_of_interest)
+        return levels_of_interest, DB
     else:
     	D = special_divisors(N)
     	return [(CuspForms(d),0) for d in D], None
@@ -280,9 +295,9 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     char_T_x = R(cusp_form_space.hecke_polynomial(p))
     S.<a,b> = QQ[]
     char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
-    substitute_poly = char_T_a_b(a=b^2+p)
+    substitute_poly = char_T_a_b(a=1+p*b^2)
 
-    return R(substitute_poly(1,char_T_x.parent().0))
+    return R(substitute_poly(a=0, b=x))
 
 
 def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
@@ -299,10 +314,25 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
                space
     """
 
-    if coeff_table ==  None:
+    if coeff_table is None:
         return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
     else:
-        return coeff_table[cusp_form_space][p]
+
+        slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space) 
+                                               & (coeff_table["p"] == p)]
+
+        if slice_of_coeff_table.shape[0] == 1:
+            hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
+            hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i for i in range(len(hecke_charpoly_coeffs))])
+        else:  # i.e., can't find data in database
+            warning_msg = ("Warning: couldn't find level {} and prime {} in DB.\n"
+                           "Reconstructing on the fly...").format(cusp_form_space, p)
+            print(warning_msg)
+            CuspFormSpaceOnFly = CuspForms(cusp_form_space)
+            hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
+
+        return hecke_charpoly
+
 
     # else, get the poly from the coefficient table
 #    look_up_key = "{}:{}:".format(cusp_form_space[0], p)
@@ -333,9 +363,9 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
 #    return f
 
 
-def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = None):
+def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,coeff_table=None):
     if M != 1:
-        Tp = get_hecke_characteristic_polynomial(S,p, coeff_table = coeff_table)
+        Tp = get_hecke_characteristic_polynomial(S,p, coeff_table=coeff_table)
         return gcd(M,p*fp.resultant(Tp))
     else:
         return M
@@ -343,7 +373,7 @@ def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = None):
 def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
     MC0 = []
     for S,M in MC:
-        MC0.append((S,rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = coeff_table)))
+        MC0.append((S,rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table=coeff_table)))
     return MC0
 
 
@@ -355,7 +385,7 @@ def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
 #########################################################
 
 
-def find_nonmaximal_primes(C, N, coeff_table =''):
+def find_nonmaximal_primes(C, N, path_to_datafile=None):
 
     #N = poor_mans_conductor(C)
     #M31 = 0
@@ -363,7 +393,7 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
     #M32B = 0
     M1p3 = 0
     M2p2nsd = 0
-    MCusp, DB = set_up_cuspidal_spaces(N, coeff_table = coeff_table)
+    MCusp, DB = set_up_cuspidal_spaces(N, path_to_datafile=path_to_datafile)
     MQuad = set_up_quadratic_chars(N)
     
     d = maximal_square_divisor(N)
@@ -386,8 +416,8 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
 
                 M1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3)
                 M2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd)
-
-                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp, coeff_table = DB)
+                # import pdb; pdb.set_trace()
+                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp,coeff_table=DB)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
 
@@ -401,7 +431,7 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
     ell_red_easy = [M1p3.prime_factors(), M2p2nsd.prime_factors()]
     non_maximal_primes = non_maximal_primes.union(set([p for j in ell_red_easy for p in j]))
 
-    if coeff_table:
+    if path_to_datafile is not None:
         ell_red_cusp = [(S,prime_factors(M)) for S,M in MCusp]
     else:
         ell_red_cusp = [(S.level(),prime_factors(M)) for S,M in MCusp]
@@ -425,8 +455,9 @@ f = -x^6 + 6*x^5 + 3*x^4 + 5*x^3 + 23*x^2 - 3*x + 5
 C = HyperellipticCurve(f,0)
 #answer=find_nonmaximal_primes(C, 279936)
 #print(answer)
+PATH_TO_MY_TABLE = '/home/barinder/Documents/sage_projects/abeliansurfaces/gamma0_wt2_hecke_lpolys_1000.txt'
 
-answer=find_nonmaximal_primes(C, 279936,coeff_table = 'gamma0_wt2_hecke_lpolys_1000.txt')
+answer=find_nonmaximal_primes(C, 279936,path_to_datafile=PATH_TO_MY_TABLE)
 print(answer)
 
 
