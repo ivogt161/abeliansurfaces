@@ -252,25 +252,26 @@ def special_divisors(N):
     return D
 
 def create_polynomial_database(fname, MaxN = 1000, MaxP = 100):
-    DB = [[0 for j in range(MaxP+1)] for i in range(MaxN+1)]
+    DB = [[R(1) for j in range(MaxP+1)] for i in range(MaxN+1)]
 
     with open(fname) as coeff_table:
         for line in coeff_table:
             flds = line.split(":")
-            #flds[2] = ast.literal_eval(flds[2]).reverse()
-            #DB[flds[0]][flds[1]] = [flds[2][i]*x^i for i in range(len(flds[2]))]
+            coeffs = ast.literal_eval(flds[2])
+            coeffs.reverse()
+            DB[ast.literal_eval(flds[0])][ast.literal_eval(flds[1])] = sum([coeffs[i]*(R.0)^i for i in range(len(coeffs))])
     
     return DB
 
 
 def set_up_cuspidal_spaces(N, coeff_table = '' ):
     if len(coeff_table) > 0:
-    	#coeff_table = open(poly_list)
-    	return [(d,0) for d in divisors(N) if d <= sqrt(N)]
+        DB = create_polynomial_database(coeff_table)
+        return [(d,0) for d in divisors(N) if d <= sqrt(N)], DB
 
     else:
     	D = special_divisors(N)
-    	return [(CuspForms(d),0) for d in D]
+    	return [(CuspForms(d),0) for d in D], None
 
 
 def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
@@ -281,15 +282,15 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
     substitute_poly = char_T_a_b(a=b^2+p)
 
-    return R(substitute_poly(a=0,b=x))
+    return R(substitute_poly(char_T_x.parent().0,1))
 
 
-def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = ''):
+def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
     """This should return the left hand side of Equation 3.8.
 
     Args:
         cusp_form_space ([type]): either a space of weight 2 cuspforms with trivial 
-        Nebentypus or a (level,line_number) pair (given as integers)
+        Nebentypus or a level (given as an integer)
         p (int): prime number
 	coeff_table: a filename with a list of characteristic polyomials for spaces of modular forms
 
@@ -298,20 +299,22 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = ''):
                space
     """
 
-    if len(coeff_table) ==  0:
+    if coeff_table ==  None:
         return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
+    else:
+        return coeff_table[cusp_form_space][p]
 
     # else, get the poly from the coefficient table
-    look_up_key = "{}:{}:".format(cusp_form_space[0], p)
-    found = False
+#    look_up_key = "{}:{}:".format(cusp_form_space[0], p)
+#    found = False
     
-    while found == False:
-        line = linecache.getline(coeff_table,cusp_form_space[1])
-        cusp_form_space[1] = cusp_form_space + 1
-        if line.startswith(look_up_key):
-            coeffs_of_hecke_charpoly = ast.literal_eval(line.split(":")[-1])
-            found = True
-            break
+#    while found == False:
+#        line = linecache.getline(coeff_table,cusp_form_space[1])
+#        cusp_form_space[1] = cusp_form_space + 1
+#        if line.startswith(look_up_key):
+#            coeffs_of_hecke_charpoly = ast.literal_eval(line.split(":")[-1])
+#            found = True
+#            break
 
 #    for line in coeff_table:
 #    	if line.startswith(look_up_key):
@@ -319,25 +322,25 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = ''):
 #                found=True
 #                break
     
-    if found:
-        f = sum(coeffs_of_hecke_charpoly[i]*x^i for i in range(len(coeffs_of_hecke_charpoly)))
-    else:
+#    if found:
+#        f = sum(coeffs_of_hecke_charpoly[i]*x^i for i in range(len(coeffs_of_hecke_charpoly)))
+#    else:
 	#Changed by Zev.
         #print("Warning: Didn't find the polynomial in the database.\nReconstructing on the fly...")
-        print("Warning: Didn't find the polynomial in the database.\n Try running without an input file.")
+        #print("Warning: Didn't find the polynomial in the database.\n Try running without an input file.")
         #f = reconstruct_large_hecke_poly_from_small(cusp_form_space, p)
 
-    return f
+#    return f
 
 
-def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = ''):
+def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = None):
     if M != 1:
         Tp = get_hecke_characteristic_polynomial(S,p, coeff_table = coeff_table)
         return gcd(M,p*fp.resultant(Tp))
     else:
         return M
 
-def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = ''):
+def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
     MC0 = []
     for S,M in MC:
         MC0.append((S,rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table = coeff_table)))
@@ -360,7 +363,7 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
     #M32B = 0
     M1p3 = 0
     M2p2nsd = 0
-    MCusp = set_up_cuspidal_spaces(N, coeff_table = coeff_table)
+    MCusp, DB = set_up_cuspidal_spaces(N, coeff_table = coeff_table)
     MQuad = set_up_quadratic_chars(N)
     
     d = maximal_square_divisor(N)
@@ -384,7 +387,7 @@ def find_nonmaximal_primes(C, N, coeff_table =''):
                 M1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3)
                 M2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd)
 
-                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp, coeff_table = coeff_table)
+                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp,MCusp, coeff_table = DB)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
@@ -416,10 +419,17 @@ R.<x> = PolynomialRing(QQ)
 #f = 2*x^5 + 3*x^4 - x^3 - 2*x^2
 #h = 1
 
-f =  -x^6 + 6*x^5 + 3*x^4 + 5*x^3 + 23*x^2 - 3*x + 5
-h = x
+
+f = -x^6 + 6*x^5 + 3*x^4 + 5*x^3 + 23*x^2 - 3*x + 5
 C = HyperellipticCurve(f,h=h)
-N = poor_mans_conductor(C)
+answer=find_nonmaximal_primes(C, 279936)
+print(answer)
+
+answer=find_nonmaximal_primes(C, 279936,coeff_table = 'gamma0_wt2_hecke_lpolys_1000.txt')
+print(answer)
+
+
+#N = poor_mans_conductor(C)
 
 #answer=find_nonmaximal_primes(C, N)
 #print(answer)
