@@ -283,7 +283,7 @@ def special_divisors(N):
 def create_polynomial_database(path_to_datafile, levels_of_interest):
 
     df = pd.read_csv(path_to_datafile, sep=":", header=None, names=["N", "p", "coeffs"])
-    actual_levels_of_interest = [i for i,j in levels_of_interest]
+    actual_levels_of_interest = [i for i,j,k in levels_of_interest]
     df_relevant = df.loc[df["N"].isin(actual_levels_of_interest)].copy()
 
     df_relevant["coeffs"] = df_relevant["coeffs"].apply(ast.literal_eval)
@@ -340,7 +340,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
                                                & (coeff_table["p"] == p)]
 
         if slice_of_coeff_table.shape[0] == 1:
-            print("doing pandas shit for level {}".format(cusp_form_space))
+            print("doing pandas stuff for level {}".format(cusp_form_space))
             hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
             hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i for i in range(len(hecke_charpoly_coeffs))])
         else:  # i.e., can't find data in database
@@ -359,15 +359,14 @@ def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=None):
         res = fp.resultant(Tp)
         if res != 0:
             return gcd(M,p*res), y+1
-    else:
-        return M, y
+    return M, y
 
 
 def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
     MC0 = []
     for S,M,y in MC:
-        M, y = rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=coeff_table)
-        MC0.append((S,M,y))
+        Mm, yy = rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=coeff_table)
+        MC0.append((S,Mm,yy))
     return MC0
 
 
@@ -408,7 +407,7 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
 
     d = maximal_square_divisor(N)
 
-    #we'll test as many p as we need to get at least 2 nontrivial Frobenius conditions for every 
+    #we'll test as many p as we need to get at least 2 nontrivial Frobenius conditions for every
     #possible cause of non-surjectivity
     sufficient_p = False
 
@@ -441,7 +440,7 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
                     if all((Mc == 1 or yc>1) for S, Mc, yc in MCusp):
                         if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
                             sufficient_p = True
-            
+
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
@@ -452,9 +451,9 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
     non_maximal_primes = non_maximal_primes.union(set([p for j in ell_red_easy for p in j]))
 
     if path_to_datafile is not None:
-        ell_red_cusp = [(S,prime_factors(M)) for S,M in MCusp]
+        ell_red_cusp = [(S,prime_factors(M)) for S,M,y in MCusp]
     else:
-        ell_red_cusp = [(S.level(),prime_factors(M)) for S,M in MCusp]
+        ell_red_cusp = [(S.level(),prime_factors(M)) for S,M,y in MCusp]
 
     non_maximal_primes = non_maximal_primes.union(set([p for a,j in ell_red_cusp for p in j]))
 
@@ -492,7 +491,7 @@ df = pd.DataFrame(zip(labels, data),
 # Since this takes ages, actually for this proof of concept let's just do it
 # for the first 10 curves. For the real deal remove the following line of code
 
-df = df.head(int(10)).copy()
+# df = df.head(int(10)).copy()
 
 # The following line runs the code on all curves in the dataframe
 df['nonmaximal_primes'] = df.apply(nonmaximal_wrapper, axis=int(1), path_to_datafile=PATH_TO_MY_TABLE)
