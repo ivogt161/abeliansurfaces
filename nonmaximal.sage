@@ -79,7 +79,7 @@ def character_list(N):
 
 
 def set_up_quadratic_chars(N):
-    return [(phi,0) for phi in character_list(N)]
+    return [(phi,0,0) for phi in character_list(N)]
 
 
 
@@ -89,23 +89,27 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
     Args:
         p (int): new prime
         fp (integer poly): charpoly of frobenius at p on a hyperelliptic curve
-        MM (list): list of the form <phi,M>, where phi is a non-trivial
-        quadratic character and all prime ell for which there is a quadratic
-        obstruction associated with phi must divide M
+        MM (list): list of the form <phi,M,y>, where phi is a non-trivial
+        quadratic character, all primes ell for which there is a quadratic
+        obstruction associated with phi must divide M, y is a counter for the
+	the number of nontrivial Frobenius constraints going into M
 
     Returns:
         (list): TODO
     """
     ap = -fp.coefficients(sparse=false)[3]
-    MM0 = []
-    for phi,M in MM:
-        if (M == 1 or phi(p) != -1):
-            MM0.append((phi,M))
-        else:
-            MM0.append((phi,gcd(M,p*ap)))
+    if ap == 0:
+        return MM
+    else:
+        MM0 = []
+        for phi,M,y in MM:
+            if (M == 1 or phi(p) != -1 or y>1):
+                MM0.append((phi,M,y))
+            else:
+                MM0.append((phi,gcd(M,p*ap), y+1))
 
-    MM0 = [(phi,M/(p_part(2,M)*p_part(3,M))) for phi,M in MM0]
-    return MM0
+#        MM0 = [(phi,M/(p_part(2,M)*p_part(3,M)), y) for phi,M,y in MM0]
+        return MM0
 
 
 
@@ -228,20 +232,32 @@ def roots_pairs_not_p(ptsa):
 #roots of the characteristic polynomial of Frobenius at p for a curve C
 #M is an integer such that every prime ell for which J_C[ell] could be
 #1 + 3 reducible divides M
-def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0):
+#y is a counter for the number of nontrivial Frobenius conditions going
+#into M
+def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = power_roots((c, p, t, s, 1))
     Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-    return ZZ(gcd(M, p*Pnew(1)))
+    Pval = Pnew(1)
+    if Pval != 0:
+        return ZZ(gcd(M, p*Pval)), y+1
+    else:
+        return M, y
 
 #t and s are the first and second elementary symmetric functions in the
 #roots of the characteristic polynomial of Frobenius at p for a curve C
 #M is an integer such that every prime ell for which J_C[ell] could be
 #2+2 non-self-dual type reducible divides M
-def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M):
+#y is a counter for the number of nontrivial Frobenius conditions going
+#into M
+def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = roots_pairs_not_p((p, t, s, 1))
     p, tnew, snew, alphanew = power_roots((c, p, tnew, snew, alphanew))
     Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-    return ZZ(gcd(M, p*Pnew(1)*Pnew(p^c)))
+    Pval = Pnew(1)*Pnew(p^c)
+    if Pval != 0:
+        return ZZ(gcd(M, p*Pval)), y+1
+    else:
+        return M, y
 
 
 
@@ -277,10 +293,10 @@ def create_polynomial_database(path_to_datafile, levels_of_interest):
 
 def set_up_cuspidal_spaces(N, path_to_datafile=None):
     if path_to_datafile is not None:
-        levels_of_interest = [(d,0) for d in divisors(N) if d <= sqrt(N)]
+        levels_of_interest = [(d,0,0) for d in divisors(N) if d <= sqrt(N)]
 
         # There are no modular forms of level < 11
-        bad_levels = [(i,0) for (i,0) in levels_of_interest if i in range(11)]
+        bad_levels = [(i,0,0) for (i,0,0) in levels_of_interest if i in range(11)]
 
         levels_of_interest = [z for z in levels_of_interest if z not in bad_levels]
 
@@ -288,7 +304,7 @@ def set_up_cuspidal_spaces(N, path_to_datafile=None):
         return levels_of_interest, DB
     else:
     	D = special_divisors(N)
-    	return [(CuspForms(d),0) for d in D], None
+    	return [(CuspForms(d),0,0) for d in D], None
 
 
 def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
@@ -337,18 +353,21 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
         return hecke_charpoly
 
 
-def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,coeff_table=None):
-    if M != 1:
+def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=None):
+    if M != 1 and y<2:
         Tp = get_hecke_characteristic_polynomial(S,p, coeff_table=coeff_table)
-        return gcd(M,p*fp.resultant(Tp))
+        res = fp.resultant(Tp)
+        if res != 0:
+            return gcd(M,p*res), y+1
     else:
-        return M
+        return M, y
 
 
 def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
     MC0 = []
-    for S,M in MC:
-        MC0.append((S,rule_out_cuspidal_space_using_Frob_p(S,p,fp,M, coeff_table=coeff_table)))
+    for S,M,y in MC:
+        M, y = rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=coeff_table)
+        MC0.append((S,M,y))
     return MC0
 
 
@@ -372,12 +391,31 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
         [set]: Set of primes containing nonmaximal primes
     """
     M1p3 = 0
+    y1p3 = 0
     M2p2nsd = 0
+    y2p2nsd = 0
+
+    #MCusp is a list of the form <S,M,y>, where S is either a space of cusp forms or
+    #a level, M is an integer such that all primes with a reducible sub isomorphic to the
+    #rep of a cusp form in S divide M, y is a counter for the number of nontrivial Frobenius
+    #conditions go into M
     MCusp, DB = set_up_cuspidal_spaces(N, path_to_datafile=path_to_datafile)
+
+    #MQuad is a list of the form <phi,M,y>, where phi is a quadratic character, M is the integer
+    #all nonsurjective primes governed by phi must divide, and y is counter for the number of nontrivial
+    #Frobenius conditions going into M
     MQuad = set_up_quadratic_chars(N)
+
     d = maximal_square_divisor(N)
 
-    for p in prime_range(1000):
+    #we'll test as many p as we need to get at least 2 nontrivial Frobenius conditions for every 
+    #possible cause of non-surjectivity
+    sufficient_p = False
+
+    p = 1
+
+    while not sufficient_p:
+            p = next_prime(p)
             if N % p != 0:
                 Cp = C.change_ring(FiniteField(p))
                 fp = Cp.frobenius_polynomial()
@@ -393,10 +431,17 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
                 tp = - fp.coefficients(sparse=false)[3]
                 sp = fp.coefficients(sparse=false)[2]
 
-                M1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3)
-                M2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd)
+                M1p3, y1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3, y1p3)
+                M2p2nsd, y2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd, y2p2nsd)
                 MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp,coeff_table=DB)
                 MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
+
+            if (M1p3 == 1) or (y1p3 > 1):
+                if (M2p2nsd == 1) or (y2p2nsd > 1):
+                    if all((Mc == 1 or yc>1) for S, Mc, yc in MCusp):
+                        if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
+                            sufficient_p = True
+            
 
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
@@ -413,7 +458,7 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
 
     non_maximal_primes = non_maximal_primes.union(set([p for a,j in ell_red_cusp for p in j]))
 
-    ell_irred = [(phi,prime_factors(M)) for phi,M in MQuad]
+    ell_irred = [(phi,prime_factors(M)) for phi,M,t in MQuad]
     non_maximal_primes = non_maximal_primes.union(set([p for a,j in ell_irred for p in j]))
 
     return non_maximal_primes
