@@ -1,4 +1,4 @@
-labels,data,possibly nonmaximal primes,probably nonmaximal primes,torsion primes
+labels,data,possibly_nonmaximal_primes,probably_nonmaximal_primes,torsion_primes
 249.a.249.1,"[[0, 1, 1], [1, 0, 0, 1]]","{2, 3, 5, 7}","{2, 7}","{2, 7}"
 249.a.6723.1,"[[2, 3, 1, 1, 0, -1], [1, 0, 0, 1]]","{2, 3, 5, 7}","{2, 7}","{2, 7}"
 277.a.277.1,"[[0, -1, -1], [1, 1, 1, 1]]","{2, 3, 5, 7}","{2, 3, 5}","{3, 5}"

@@ -22,7 +22,7 @@ R.<x> = PolynomialRing(QQ)
 # should resolve the issue.
 
 PATH_TO_MY_TABLE = 'gamma0_wt2_hecke_lpolys_1000.txt'
-OUTPUT_FILE = "g2c_results.csv"
+OUTPUT_FILE = "g2c_results_unified.csv"
 
 #########################################################
 #                            #
@@ -372,6 +372,26 @@ def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
 
 #########################################################
 #                            #
+#          Find surjective primes from list        #
+#                            #
+#########################################################
+
+"""
+This was going to be the copied/pasted code from the CoCalc notebook,
+developed by the 'testing_surjectivity' subgroup people. However, that code
+stretched to almost 600 lines of code itself (mostly lists of polynomials), so
+it's cleaner to give it its own module. We could import it like a normal
+python package, but then this file will have to be run as a sage executable, and
+since I expect most people to 'load' this current into the sage shell, the
+following is preferable. The downside with this is that it means the user needs
+to launch sage from the top level 'abeliansurfaces' directory.
+"""
+
+load('find_surj_from_list.sage')
+
+
+#########################################################
+#                            #
 #               Putting it all together            #
 #                            #
 #########################################################
@@ -464,11 +484,48 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
 
 
 def nonmaximal_wrapper(row, path_to_datafile=None):
-    """Pandas wrapper of 'find_nonmaximal_primes'"""
+    """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surj'"""
 
     C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
     conductor_of_C = Integer(row['labels'].split(".")[0])
-    return find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=path_to_datafile)
+    possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=path_to_datafile)
+    probably_nonmaximal_primes = is_surj(C, L=list(possibly_nonmaximal_primes))
+    return possibly_nonmaximal_primes, probably_nonmaximal_primes
+
+
+def get_many_results(subset=None):
+    """Main calling function. Outputs a csv file of the results.
+
+    Args:
+        subset ([int], optional): Returns results only on a subset of the data.
+                                Set this to a small number (e.g. 5 or 10) to
+                                get quick results on a few curves. Defaults to
+                                None (meaning the whole dataset).
+    """
+
+    from g2c_curves_list import labels, data
+    df = pd.DataFrame(zip(labels, data),
+                      columns=['labels', 'data'])
+
+    if subset is not None:
+        df = df.head(int(subset)).copy()
+        print("Running on the first {} LMFDB genus 2 curves which are absolutely simple...(will take about {} seconds)...".format(subset, subset*3))
+    else:
+        print("Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(subset))
+
+    # The following line runs the above code on all curves in the dataframe
+    df[['possibly_nonmaximal_primes','probably_nonmaximal_primes']] = df.apply(nonmaximal_wrapper, axis=int(1), path_to_datafile=PATH_TO_MY_TABLE, result_type="expand")
+
+    # It may be useful to know the primes where the Jacobian has rational torsion.
+    # This has been computed in Magma elsewhere. Since not everyone has access to
+    # Magma, this data has been saved in the file 'torsion_primes.csv'.
+
+    df_torsion = pd.read_csv('torsion_primes.csv')
+    df = pd.merge(df, df_torsion, how='left', on='labels')
+
+    # We now output the csv results file
+    df.to_csv(OUTPUT_FILE, index=False)
+    print("The results output to {}".format(OUTPUT_FILE))
 
 
 #########################################################
@@ -477,29 +534,12 @@ def nonmaximal_wrapper(row, path_to_datafile=None):
 #                            #
 #########################################################
 
-
 """
-If you want to run the code on all the genus 2 curves in the LMFDB, the following
-will do it. It will output "genus2_results.csv" in the cwd
+If you want to run the code on either all of, a subset of, the genus 2 curves
+in the LMFDB, the following will do it. It will output the file in the cwd.
 """
 
-print("Running on the first 10 LMFDB genus 2 curves which are absolutely simple...(will take a minute or two)...")
-from g2c_curves_list import labels, data
-df = pd.DataFrame(zip(labels, data),
-                  columns=['labels', 'data'])
-
-# Since this takes ages, actually for this proof of concept let's just do it
-# for the first 10 curves. For the real deal remove the following line of code
-
-# df = df.head(int(10)).copy()
-
-# The following line runs the code on all curves in the dataframe
-df['nonmaximal_primes'] = df.apply(nonmaximal_wrapper, axis=int(1), path_to_datafile=PATH_TO_MY_TABLE)
-
-# We now output the csv results file
-df.to_csv(OUTPUT_FILE, index=False)
-print("The first 10 genus 2 results output to {}".format(OUTPUT_FILE))
-
+get_many_results(subset=3)
 
 """
 If however you only want to run it on a specific curve, then the following will do
@@ -510,7 +550,7 @@ f = x^2 + x
 h = x^3 + 1
 C = HyperellipticCurve(R(f),R(h))
 conductor_of_C = 249
-
-answer=find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-print("Nonmaximal primes for this one curve are {}".format(answer))
-
+possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
+probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
+print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+                                                    probably_nonmaximal_primes))
