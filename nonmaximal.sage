@@ -8,7 +8,6 @@ action on J_C[ell] is nonmaximal.
 Code is organized according to maximal subgroups of GSp_4"""
 
 # Imports
-
 import ast
 import pandas as pd
 
@@ -539,18 +538,18 @@ If you want to run the code on either all of, a subset of, the genus 2 curves
 in the LMFDB, the following will do it. It will output the file in the cwd.
 """
 
-get_many_results(subset=3)
+# get_many_results(subset=3)
 
 """
 If however you only want to run it on a specific curve, then the following will do
 """
 
-print("Running one example...")
-f = x^2 + x
-h = x^3 + 1
-C = HyperellipticCurve(R(f),R(h))
-conductor_of_C = 249
-possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
-print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
-                                                    probably_nonmaximal_primes))
+# print("Running one example...")
+# f = x^2 + x
+# h = x^3 + 1
+# C = HyperellipticCurve(R(f),R(h))
+# conductor_of_C = 249
+# possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
+# probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
+# print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+#                                                     probably_nonmaximal_primes))
