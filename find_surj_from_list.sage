@@ -1,666 +1,325 @@
 """find_surj_from_list.sage
-This is code from the CoCalc notebook; it finds the surjective primes from a
-list
+Given a typical hyperelliptic curve H over the rationals, is_surjective(H) returns a list of primes less than 1000 at which the residual
+Galois repsentation might not be surjective. The primes less than 1000 outside of the returned list are verified to be surjective.
 """
 
-def sub_list(l):
-    if not l in [2,3,5,7]: raise Exception("l must be 2,3,5 or 7")
-    S.<x> = PolynomialRing(Zmod(l))
-    if l == 2:
-        #CHAR2 is a list of characteristic polynomials of each maximal subgroup of GSp(4,2), except for the maximal subgroup that is isomorphic to A_6 (since that subgroup has all characteristic polynomials so must be dealt with differently)
-        CHAR2 = [
-            {
-                x^4 + x^2 + 1,
-                x^4 + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + x^3 + x + 1
-            },
-            {
-                x^4 + x^2 + 1,
-                x^4 + 1,
-                x^4 + x^3 + x + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + x^3 + x + 1
-            },
-            {
-                x^4 + x^2 + 1,
-                x^4 + 1,
-                x^4 + x^3 + x^2 + x + 1
-            }
-        ]
-        return CHAR2
-    if l == 3:
-        #CHAR3 is a list of characteristic polynomials of each maximal subgroup of GSp(4,3)
-        CHAR3 = [
-            {
-                x^4 + x^2 + 1,
-                x^4 + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 1
-            },
-            {
-                x^4 + x^2 + 1,
-                x^4 + 2*x^3 + x^2 + x + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + x^2 + 2*x + 1
-            },
-            {
-                x^4 + 2*x^3 + x^2 + 2*x + 1,
-                x^4 + 1,
-                x^4 + 2*x^3 + x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + x^3 + 2*x + 1,
-                x^4 + x^2 + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x^2 + 2*x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^2 + 1,
-                x^4 + 2*x^3 + x^2 + x + 1
-            },
-            {
-                x^4 + 2*x^3 + x^2 + 2*x + 1,
-                x^4 + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + x^3 + x^2 + 2*x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^2 + 1,
-                x^4 + 2*x^3 + x^2 + x + 1
-            },
-            {
-                x^4 + x^2 + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 2*x^3 + x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + 2*x^2 + 1
-            }
-        ]
-        return CHAR3
-    if l == 5:
-        #CHAR5 is a list of characteristic polynomials of each maximal subgroup of GSp(4,3)
-        CHAR5 = [
-            {
-                x^4 + 1,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 3*x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 4*x^3 + 4*x^2 + 3*x + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + x^2 + 4,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x + 1,
-                x^4 + 3*x^3 + x^2 + 4*x + 4,
-                x^4 + 3*x^2 + 1,
-                x^4 + 2*x^3 + x^2 + x + 4,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 4*x^2 + 4,
-                x^4 + x^3 + 4*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 2*x^2 + 4,
-                x^4 + 4,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 2*x^2 + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + x + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 2*x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + x^2 + 1,
-                x^4 + x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + x^3 + 3*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 4*x^2 + 4,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 2*x^2 + 4,
-                x^4 + 2*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4,
-                x^4 + 2*x^3 + 4*x + 4,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4*x^2 + 1,
-                x^4 + 2*x^2 + 1
-            },
-            {
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 4*x^2 + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + x^2 + 1,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 4*x^3 + 4*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + x^2 + x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 2*x + 4,
-                x^4 + 2*x^3 + 3*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x + 4,
-                x^4 + 4*x^2 + 4,
-                x^4 + 2*x^3 + x^2 + x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + 3*x^3 + x^2 + 4*x + 4,
-                x^4 + x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^2 + 4,
-                x^4 + 3*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 4,
-                x^4 + 3*x^3 + x + 4,
-                x^4 + x^3 + 3*x + 4,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 4*x^2 + 3*x + 4,
-                x^4 + x^3 + 4*x^2 + 2*x + 4,
-                x^4 + x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x^2 + 3*x + 4,
-                x^4 + 3*x^3 + 4*x^2 + x + 4,
-                x^4 + 3*x^3 + 2*x^2 + x + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + x^2 + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 4*x^2 + 4,
-                x^4 + 2*x^3 + 4*x^2 + 4*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 2*x^2 + 4,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 4,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 4*x^3 + x^2 + 2*x + 4,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4*x^2 + 1,
-                x^4 + 2*x^2 + 1
-            },
-            {
-                x^4 + x^3 + 2*x + 4,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 2*x^3 + x + 4,
-                x^4 + x^3 + 3*x + 4,
-                x^4 + x^3 + 2*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + x + 4,
-                x^4 + 3*x^3 + x + 4,
-                x^4 + 3*x^3 + 2*x^2 + x + 4,
-                x^4 + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + 2*x^3 + 4*x + 4,
-                x^4 + 4*x^2 + 1,
-                x^4 + 2*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4*x^3 + 2*x + 4,
-                x^4 + 3*x^3 + 4*x + 4,
-                x^4 + 4*x^3 + 2*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 3*x^3 + 4*x^2 + 4*x + 4,
-                x^4 + 4*x^3 + 3*x + 4,
-                x^4 + x^3 + 4*x^2 + x + 1,
-                x^4 + x^3 + 4*x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + x^3 + 4*x^2 + 4*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^2 + 4,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + x + 1,
-                x^4 + 3*x^3 + 3*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 4*x^3 + 4*x^2 + x + 1,
-                x^4 + x^3 + x^2 + 2*x + 4,
-                x^4 + 4*x^3 + 4*x^2 + 4*x + 1,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 3*x^3 + 3*x^2 + x + 4,
-                x^4 + x^2 + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + 2*x^3 + 3*x^2 + 4*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 2*x + 4,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + x^2 + 3*x + 4,
-                x^4 + x^3 + 3*x^2 + x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + x^2 + 3*x + 1,
-                x^4 + 4,
-                x^4 + 3*x^3 + x^2 + 2*x + 1,
-                x^4 + 2*x^2 + 4,
-                x^4 + 4*x^2 + 4,
-                x^4 + 3*x^3 + x^2 + 3*x + 1,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1
-            },
-            {
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 3*x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + x^2 + x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + x^2 + 3*x + 4,
-                x^4 + 3*x^3 + 4*x^2 + x + 4,
-                x^4 + 4*x^3 + 2*x^2 + 3*x + 4,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + x^2 + 4*x + 4,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 4*x^2 + 2*x + 4,
-                x^4 + x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x + 1,
-                x^4 + 4*x^3 + 4*x + 1,
-                x^4 + 3*x^3 + 3*x^2 + 4*x + 4,
-                x^4 + 3*x^2 + 1,
-                x^4 + 2*x^3 + 3*x^2 + x + 4,
-                x^4 + 2*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + x^3 + 4*x^2 + 3*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 4*x + 4,
-                x^4 + 3*x^3 + x^2 + x + 4,
-                x^4 + x^3 + 2*x^2 + 2*x + 4,
-                x^4 + 4,
-                x^4 + 4*x^3 + x^2 + 2*x + 4,
-                x^4 + 3*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 2*x^2 + 1
-            },
-            {
-                x^4 + 1,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + x + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 3*x^3 + x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 2*x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + x^2 + 1,
-                x^4 + x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + x^3 + 3*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + 4*x^2 + 4,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 2*x^2 + 4,
-                x^4 + 2*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4,
-                x^4 + 2*x^3 + 4*x + 4,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4*x^2 + 1,
-                x^4 + 2*x^2 + 1
-            },
-            {
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + x^3 + 2*x^2 + 2*x + 4,
-                x^4 + x^3 + 4*x^2 + 2*x + 4,
-                x^4 + x^3 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + x + 4,
-                x^4 + x^3 + 4*x^2 + 3*x + 4,
-                x^4 + 3*x^3 + x + 4,
-                x^4 + 3*x^3 + 4*x^2 + x + 4,
-                x^4 + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + 2*x^3 + 4*x + 4,
-                x^4 + 4*x^2 + 1,
-                x^4 + 2*x^3 + 4*x^2 + 4*x + 4,
-                x^4 + 4*x^3 + 2*x + 4,
-                x^4 + 3*x^3 + 2*x^2 + 4*x + 4,
-                x^4 + 4*x^3 + 4*x^2 + 2*x + 4,
-                x^4 + x^3 + x + 1,
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + 3*x + 4,
-                x^4 + 4*x^3 + 4*x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 3*x + 1,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 3*x^3 + 2*x + 1,
-                x^4 + x^2 + 4,
-                x^4 + 3*x^2 + 4,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 4*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + 4*x + 1,
-                x^4 + x^3 + 3*x^2 + 2*x + 4,
-                x^4 + 2*x^3 + x^2 + x + 4,
-                x^4 + x^3 + x^2 + 3*x + 4,
-                x^4 + 2*x^3 + 3*x^2 + x + 4,
-                x^4 + 3*x^3 + x^2 + x + 4,
-                x^4 + x^2 + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + 2*x^3 + x^2 + 4*x + 4,
-                x^4 + 4*x^3 + x^2 + 2*x + 4,
-                x^4 + 3*x^3 + x^2 + 4*x + 4,
-                x^4 + 3*x^3 + 3*x^2 + 4*x + 4,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 3*x^2 + 3*x + 4,
-                x^4 + x^3 + x^2 + 4*x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 4,
-                x^4 + 2*x^2 + 4,
-                x^4 + 3*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 4*x^2 + 4,
-                x^4 + 4*x^3 + x^2 + x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1
-            },
-            {
-                x^4 + x^3 + 2*x^2 + x + 1,
-                x^4 + x^3 + 4*x + 1,
-                x^4 + x^3 + x^2 + x + 1,
-                x^4 + x^3 + x + 1,
-                x^4 + 4*x^2 + 1,
-                x^4 + 4*x^3 + 4*x^2 + 4*x + 1,
-                x^4 + 3*x^2 + 1,
-                x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 2*x^2 + 1,
-                x^4 + 4*x^3 + 4*x^2 + x + 1,
-                x^4 + 4*x^3 + 2*x^2 + 4*x + 1,
-                x^4 + x^2 + 1,
-                x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 3*x^2 + x + 1,
-                x^4 + 1,
-                x^4 + 4*x^3 + x^2 + 4*x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + 2*x^2 + x + 1,
-                x^4 + 4*x^3 + 4*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 4*x^3 + x^2 + x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + x^2 + 3*x + 1,
-                x^4 + 4*x^3 + x + 1,
-                x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-                x^4 + 2*x^3 + 3*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-                x^4 + 3*x^3 + x^2 + 3*x + 1,
-                x^4 + 3*x^3 + 3*x + 1,
-                x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + x^2 + 2*x + 1,
-                x^4 + x^3 + 4*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 3*x^2 + 2*x + 1,
-                x^4 + 2*x^3 + 2*x + 1,
-                x^4 + x^3 + 3*x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-                x^4 + x^3 + 4*x^2 + x + 1,
-                x^4 + 3*x^3 + x^2 + 2*x + 1,
-                x^4 + x^3 + 2*x^2 + 4*x + 1,
-                x^4 + x^3 + 3*x^2 + x + 1,
-                x^4 + x^3 + x^2 + 4*x + 1,
-                x^4 + 3*x^3 + 2*x + 1
-            }
-        ]
-        return CHAR5
-    if l==7:
-        #CHAR7 contains the characteristic polynomials for the only exeptional maximal subgroup of GSp(4,7)
-        CHAR7 = [
-        {
-            x^4 + 2*x^3 + 5*x^2 + 5*x + 1,
-            x^4 + 5*x^3 + 5*x^2 + 2*x + 1,
-            x^4 + x^3 + 6*x^2 + 2*x + 4,
-            x^4 + x^3 + 3*x^2 + 4*x + 2,
-            x^4 + 5*x^3 + 3*x^2 + 5*x + 1,
-            x^4 + 1,
-            x^4 + 2*x^2 + 1,
-            x^4 + 6*x^2 + 1,
-            x^4 + 4*x^3 + x + 4,
-            x^4 + 4*x^3 + 2*x^2 + x + 4,
-            x^4 + 6*x^3 + x^2 + 6*x + 1,
-            x^4 + 4*x^3 + 5*x^2 + 2*x + 2,
-            x^4 + x^3 + x + 1,
-            x^4 + 3*x^3 + 5*x^2 + 5*x + 2,
-            x^4 + 3*x^3 + 6*x + 4,
-            x^4 + 3*x^3 + 2*x^2 + 6*x + 4,
-            x^4 + 6*x^3 + 3*x^2 + 3*x + 2,
-            x^4 + 2,
-            x^4 + x^3 + 4*x^2 + 6*x + 1,
-            x^4 + 3*x^2 + 4,
-            x^4 + 6*x^2 + 2,
-            x^4 + 5*x^2 + 4,
-            x^4 + 3*x^3 + 6*x^2 + 3*x + 1,
-            x^4 + 6*x^3 + 6*x^2 + 5*x + 4,
-            x^4 + 3*x^3 + 4*x^2 + 4*x + 1,
-            x^4 + 4*x^3 + 4*x^2 + 3*x + 1,
-            x^4 + 4*x^3 + 6*x^2 + 4*x + 1,
-            x^4 + 2*x^3 + x + 2,
-            x^4 + x^3 + 2*x^2 + 3*x + 2,
-            x^4 + 2*x^3 + 4*x^2 + x + 2,
-            x^4 + 6*x^3 + 4*x^2 + x + 1,
-            x^4 + 3*x^3 + x^2 + x + 4,
-            x^4 + 2*x^3 + x^2 + 3*x + 4,
-            x^4 + x^3 + 3*x^2 + 5*x + 4,
-            x^4 + 5*x^2 + 1,
-            x^4 + 2*x^3 + 5*x^2 + 4*x + 4,
-            x^4 + 3*x^3 + 6*x^2 + 2*x + 2,
-            x^4 + 6*x^3 + 6*x + 1,
-            x^4 + 2*x^3 + 2*x^2 + 6*x + 2,
-            x^4 + x^3 + x^2 + x + 1,
-            x^4 + 5*x^3 + 2*x^2 + x + 2,
-            x^4 + 5*x^3 + 5*x^2 + 3*x + 4,
-            x^4 + 4*x^3 + 6*x^2 + 5*x + 2,
-            x^4 + 4*x^3 + x^2 + 6*x + 4,
-            x^4 + 5*x^3 + x^2 + 4*x + 4,
-            x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-            x^4 + 6*x^3 + 3*x^2 + 2*x + 4,
-            x^4 + x^2 + 2,
-            x^4 + 4,
-            x^4 + 5*x^3 + 6*x + 2,
-            x^4 + 3*x^2 + 2,
-            x^4 + 6*x^3 + 2*x^2 + 4*x + 2,
-            x^4 + 4*x^2 + 4,
-            x^4 + 5*x^3 + 4*x^2 + 6*x + 2
-        }
-        ]
-        return CHAR7
+def _init_exps():
+    """
+    Return a dictionary with keys l = 3, 5, and 7; for each l, the associated value is the list of characteristic polynomials of the matrices in the exceptional subgroup of GSp(4,l).
+    """
+    #char3 is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,3) (up to conjugation) that isn't ruled out by surj_tests
+    R.<x> = PolynomialRing(Zmod(3))
+    char3 = [x^4 + 2*x^3 + x^2 + 2*x + 1,
+        x^4 + 1,
+        x^4 + x^3 + 2*x^2 + x + 1,
+        x^4 + 2*x^3 + 2*x + 1,
+        x^4 + x^3 + 2*x^2 + 2*x + 1,
+        x^4 + x^3 + x^2 + x + 1,
+        x^4 + x^3 + x^2 + 2*x + 1,
+        x^4 + 2*x^2 + 1,
+        x^4 + x^3 + x + 1,
+        x^4 + 2*x^3 + 2*x^2 + x + 1,
+        x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
+        x^4 + x^2 + 1,
+        x^4 + 2*x^3 + x^2 + x + 1]
+    #char5 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,5) (up to conjugation) that isn't ruled out by surj_tests
+    R.<x> = PolynomialRing(Zmod(5))
+    char5 = [x^4 + x^3 + 2*x^2 + x + 1,
+        x^4 + x^3 + 4*x + 1,
+        x^4 + x^3 + x^2 + x + 1,
+        x^4 + x^3 + x + 1,
+        x^4 + 4*x^2 + 1,
+        x^4 + 4*x^3 + 4*x^2 + 4*x + 1,
+        x^4 + 3*x^2 + 1,
+        x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
+        x^4 + 2*x^2 + 1,
+        x^4 + 4*x^3 + 4*x^2 + x + 1,
+        x^4 + 4*x^3 + 2*x^2 + 4*x + 1,
+        x^4 + x^2 + 1,
+        x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
+        x^4 + 4*x^3 + 3*x^2 + x + 1,
+        x^4 + 1,
+        x^4 + 4*x^3 + x^2 + 4*x + 1,
+        x^4 + 2*x^3 + 3*x^2 + 3*x + 1,
+        x^4 + 4*x^3 + 2*x^2 + x + 1,
+        x^4 + 4*x^3 + 4*x + 1,
+        x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
+        x^4 + 4*x^3 + x^2 + x + 1,
+        x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
+        x^4 + 2*x^3 + x^2 + 3*x + 1,
+        x^4 + 4*x^3 + x + 1,
+        x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
+        x^4 + 2*x^3 + 3*x + 1,
+        x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
+        x^4 + 3*x^3 + x^2 + 3*x + 1,
+        x^4 + 3*x^3 + 3*x + 1,
+        x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
+        x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
+        x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
+        x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
+        x^4 + 2*x^3 + x^2 + 2*x + 1,
+        x^4 + x^3 + 4*x^2 + 4*x + 1,
+        x^4 + 3*x^3 + 3*x^2 + 2*x + 1,
+        x^4 + 2*x^3 + 2*x + 1,
+        x^4 + x^3 + 3*x^2 + 4*x + 1,
+        x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
+        x^4 + x^3 + 4*x^2 + x + 1,
+        x^4 + 3*x^3 + x^2 + 2*x + 1,
+        x^4 + x^3 + 2*x^2 + 4*x + 1,
+        x^4 + x^3 + 3*x^2 + x + 1,
+        x^4 + x^3 + x^2 + 4*x + 1,
+        x^4 + 3*x^3 + 2*x + 1]
+    #char7 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,7) (up to conjugation) that isn't ruled out by surj_tests
+    R.<x> = PolynomialRing(Zmod(7))
+    char7 = [x^4 + 2*x^3 + 5*x^2 + 5*x + 1,
+        x^4 + 5*x^3 + 5*x^2 + 2*x + 1,
+        x^4 + x^3 + 6*x^2 + 2*x + 4,
+        x^4 + x^3 + 3*x^2 + 4*x + 2,
+        x^4 + 5*x^3 + 3*x^2 + 5*x + 1,
+        x^4 + 1,
+        x^4 + 2*x^2 + 1,
+        x^4 + 6*x^2 + 1,
+        x^4 + 4*x^3 + x + 4,
+        x^4 + 4*x^3 + 2*x^2 + x + 4,
+        x^4 + 6*x^3 + x^2 + 6*x + 1,
+        x^4 + 4*x^3 + 5*x^2 + 2*x + 2,
+        x^4 + x^3 + x + 1,
+        x^4 + 3*x^3 + 5*x^2 + 5*x + 2,
+        x^4 + 3*x^3 + 6*x + 4,
+        x^4 + 3*x^3 + 2*x^2 + 6*x + 4,
+        x^4 + 6*x^3 + 3*x^2 + 3*x + 2,
+        x^4 + 2,
+        x^4 + x^3 + 4*x^2 + 6*x + 1,
+        x^4 + 3*x^2 + 4,
+        x^4 + 6*x^2 + 2,
+        x^4 + 5*x^2 + 4,
+        x^4 + 3*x^3 + 6*x^2 + 3*x + 1,
+        x^4 + 6*x^3 + 6*x^2 + 5*x + 4,
+        x^4 + 3*x^3 + 4*x^2 + 4*x + 1,
+        x^4 + 4*x^3 + 4*x^2 + 3*x + 1,
+        x^4 + 4*x^3 + 6*x^2 + 4*x + 1,
+        x^4 + 2*x^3 + x + 2,
+        x^4 + x^3 + 2*x^2 + 3*x + 2,
+        x^4 + 2*x^3 + 4*x^2 + x + 2,
+        x^4 + 6*x^3 + 4*x^2 + x + 1,
+        x^4 + 3*x^3 + x^2 + x + 4,
+        x^4 + 2*x^3 + x^2 + 3*x + 4,
+        x^4 + x^3 + 3*x^2 + 5*x + 4,
+        x^4 + 5*x^2 + 1,
+        x^4 + 2*x^3 + 5*x^2 + 4*x + 4,
+        x^4 + 3*x^3 + 6*x^2 + 2*x + 2,
+        x^4 + 6*x^3 + 6*x + 1,
+        x^4 + 2*x^3 + 2*x^2 + 6*x + 2,
+        x^4 + x^3 + x^2 + x + 1,
+        x^4 + 5*x^3 + 2*x^2 + x + 2,
+        x^4 + 5*x^3 + 5*x^2 + 3*x + 4,
+        x^4 + 4*x^3 + 6*x^2 + 5*x + 2,
+        x^4 + 4*x^3 + x^2 + 6*x + 4,
+        x^4 + 5*x^3 + x^2 + 4*x + 4,
+        x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
+        x^4 + 6*x^3 + 3*x^2 + 2*x + 4,
+        x^4 + x^2 + 2,
+        x^4 + 4,
+        x^4 + 5*x^3 + 6*x + 2,
+        x^4 + 3*x^2 + 2,
+        x^4 + 6*x^3 + 2*x^2 + 4*x + 2,
+        x^4 + 4*x^2 + 4,
+        x^4 + 5*x^3 + 4*x^2 + 6*x + 2]
+    return {3 : char3, 5 : char5, 7 : char7}
 
 
-
-def initialize_witnesses(L,ruled_out):
+def _init_wit(L):
+    """
+    Return a list for witnesses with all entries initially all set to zero, in the following format:
+        2: [_] <-> [_is_surj_at_2 ]
+        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
+        5: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
+        7: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
+        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
+    """
     witnesses = {}
     for l in L:
-        if l < 7: witnesses[l] = [0]*len(sub_list(l))
+        if l == 2:
+            witnesses[l] = [0]
+        elif l in [3,5,7]:
+            witnesses[l] = [0,0,0]
         else:
-            if l == 7: witnesses[l] = [0]*4
-            else: witnesses[l] = [0]*3
-            if l in ruled_out:
-                if ruled_out[l][0]: witnesses[l][0] = -2
-                if ruled_out[l][1]: witnesses[l][1] = -2
-                if ruled_out[l][2]: witnesses[l][2] = -2
+            witnesses[l] = [0,0]
     return witnesses
 
-def initialize_char(L):
-    CHAR = {}
-    for l in L:
-        if l in [2,3,5,7]:
-            CHAR[l] = sub_list(l)
-    return CHAR
 
-def inA6at2(H):
-    Q,P = H.hyperelliptic_polynomials()
-    curve = genus2reduction(P,Q)
-    disc = curve.minimal_disc
-    if disc.is_square(): return True
-    return False
+def _is_surj_at_2(f,h):
+    """
+    Return True if and only if the mod 2 Galois image of the Jacobian of y^2 + h(x) y = f(x) is surjective, i.e. if and
+    only if the Galois group of the polynomial 4*f+h^2 is all of S_6.
+    """
+    F = 4*f + h^2
+    return F.is_irreducible() and F.galois_group().order() == 720
 
-def chk_brk(witnesses):
-    for wit in witnesses:
-        if 0 in witnesses[wit]: return False
-    return True
 
-def return_data(L,witnesses,verbose):
-    if verbose == True: return witnesses
-    non_surj_primes = []
-    for l in L:
-        if -2 in witnesses[l] or -1 in witnesses[l] or 0 in witnesses[l]: non_surj_primes.append(l)
-    return set(non_surj_primes)
+def _surj_test_A(frob_mod):
+    """
+    Return True if frob_mod is irreducible.
+    """
+    return frob_mod.is_irreducible()
 
-# Tests return true if corresponding max sub is found to not contain image of Galois
-def is_ired_poly(fmod_factored):
-    return len(fmod_factored) == 1 and fmod_factored[0][1] == 1
 
-def trace_poly(fmod):
-    return -fmod[fmod.degree()-1]
-
-def surj_test12(fmod_factored):
-    return is_ired_poly(fmod_factored)
-
-def surj_test35(fmod, fmod_factored):
-    return is_ired_poly(fmod_factored) and trace_poly(fmod) != 0
-
-def surj_test4(fmod, fmod_factored):
-    if trace_poly(fmod) != 0:
-        for fact in fmod_factored:
-            if fact[0].degree() == 1 and fact[1] % 2 != 0:
+def _surj_test_B(frob_mod):
+    """
+    Return True if frob_mod has nonzero trace and has a linear factor with multiplicity one.
+    """
+    if -frob_mod[3] != 0:
+        for fact in frob_mod.factor():
+            if fact[0].degree() == 1 and fact[1] == 1:
                 return True
     return False
 
-def surj_tests(C,CHAR,l,p,f,wit):
-    fmod = f.change_ring(Zmod(l))
+
+def _surj_test_exp(l, frob_mod, exps):
+    """
+    Return True if frob_mod is the characteristic polynomial of a matrix that is not in the exceptional subgroup mod l
+    """
+    return not frob_mod in exps[l]
+
+
+def _update_wit(l, p, frob, f, h, exps, wit):
+    """
+    Return an updated list of witnesses, based on surjectivity tests for frob at p.
+    """
+    frob_mod = frob.change_ring(Zmod(l))
     for i in range(0,len(wit)):
         if wit[i] == 0:
-            if l < 7:
-                if not fmod in CHAR[l][i]:  wit[i] = p
-            if l == 7 and i == 3:
-                if not fmod in CHAR[l][0]:  wit[i] = p
-            if l >= 7:
-                fmod_factored = fmod.factor()
-                if i == 0 and surj_test12(fmod_factored): wit[0] = p
-                if i == 1 and surj_test35(fmod,fmod_factored): wit[1] = p
-                if i == 2 and surj_test4(fmod,fmod_factored): wit[2] = p
+            if l == 2:
+                if _is_surj_at_2(f,h):
+                    wit[i] = 1
+                else:
+                    wit[i] = -1
+            elif i == 0 and _surj_test_A(frob_mod):
+                wit[i] = p
+            elif i == 1 and _surj_test_B(frob_mod):
+                wit[i] = p
+            elif i == 2 and _surj_test_exp(l, frob_mod, exps):
+                wit[i] = p
     return wit
 
-def is_surj(H,L,verbose=False,bound=10^3,ruled_out={}):
-    C = poor_mans_conductor(H)
-    witnesses = initialize_witnesses(L,ruled_out)
-    CHAR = initialize_char(L)
-    if 2 in L and inA6at2(H) == True: witnesses[2] = [-1]*len(sub_list(2))
+
+def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
+    r"""
+    Return a list of primes in L at which the residual Galois representation of the Jacobian of `H` might not be surjective.
+    Outside of the returned list, all primes in L are surjective. The primes in the returned list are likely non-surjective.
+
+    INPUT:
+
+    - ``H`` -- hyperelliptic curve with typical Jacobian
+
+    - ``L`` -- list of primes (default: list of primes less than 1000)
+
+    - ``bound`` -- integer (default: `1000`)
+
+    - ``verbose`` -- boolean (default: `False`)
+
+    OUTPUT: a list
+
+    EXAMPLES:
+
+        sage: R.<x> = PolynomialRing(QQ);
+        sage: H = HyperellipticCurve(R([0, 1, 1]), R([1, 0, 0, 1]));
+        sage: is_surjective(H)
+        [2, 7]
+
+        sage: R.<x> = PolynomialRing(QQ)
+        sage: H = HyperellipticCurve(R([0, 21, -5, -9, 1, 1]), R([1, 1])); H
+        Hyperelliptic Curve over Rational Field defined by y^2 + (x + 1)*y = x^5 + x^4 - 9*x^3 - 5*x^2 + 21*x
+        sage: is_surjective(H)
+        [2, 13]
+
+    """
+    f,h = H.hyperelliptic_polynomials()
+    C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
+    witnesses = _init_wit(L)
+    exps = _init_exps()
+    to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
     for p in primes(3,bound):
         if C % p != 0:
             Hp = H.change_ring(GF(p))
-            f = Hp.frobenius_polynomial()
-            for l in L:
-                if p !=l and 0 in witnesses[l]:
-                    witnesses[l] = surj_tests(C,CHAR,l,p,f,witnesses[l])
-        if chk_brk(witnesses) == True: break
-    return return_data(L,witnesses,verbose)
+            frob = Hp.frobenius_polynomial()
+            to_remove = []
+            for l in to_check:
+                if p != l and 0 in witnesses[l]:
+                    witnesses[l] = _update_wit(l, p, frob, f, h, exps, witnesses[l])
+                    if not 0 in witnesses[l]:
+                        to_remove.append(l)
+            for l in to_remove:
+                to_check.remove(l)
+    if verbose:
+        return witnesses
+    probably_non_surj_primes = []
+    for l in L:
+        if -1 in witnesses[l] or 0 in witnesses[l]:
+            probably_non_surj_primes.append(l)
+    return probably_non_surj_primes
+
+
+
+
+
+
+
+#################################################
+### FURTHER EXAMPLES 
+#################################################
+
+#R.<x> = PolynomialRing(Rationals())
+
+# Talk example
+#H = HyperellipticCurve(R([0, 21, -5, -9, 1, 1]), R([1, 1])); H
+#is_surjective(H)
+
+# Ex from Noam (not typical)
+#H = HyperellipticCurve(5*x^6-4*x^5+20*x^4-2*x^3+24*x^2+20*x+5);
+#is_surj(H)
+
+#Example from Drew
+#H = HyperellipticCurve(R([-118, 106, 9, -21, 0, 1]), R([0, 1])); H
+#is_surj(H)
+
+#H = HyperellipticCurve(R([9, 6, -33, -18, 25, 20])); H
+#is_surj(H)
+
+#H = HyperellipticCurve(3628260*x^6 - 1222632*x^5 - 3709872*x^4 + 2955424*x^3 + 2006931*x^2 - 314944*x + 143566,0); H
+#is_surj(H)
+
+#H = HyperellipticCurve(58428*x^6 + 894708*x^5 + 3976245*x^4 + 2374954*x^3 - 12089658*x^2 - 319990*x - 7081 ,0); H
+#is_surj(H)
+
+#Noam's Example
+#H = HyperellipticCurve(16568*x^6 - 91931*x^5 - 1154002*x^4 + 5931677*x^3 - 476629*x^2 - 5645488*x - 1898052,0); H
+#is_surj(H)
+
+#CM curve
+#H = HyperellipticCurve(R([1, 0, 0, 0, 0, 0, 1])); H
+#is_surj(H)
+
+#?
+#H = HyperellipticCurve(R([1, -2, -1, 4, 3, 2, 1])); H
+#is_surj(H)
+
+#conductor 249
+#H = HyperellipticCurve(R([1, 4, 4, 2, 0, 0, 1])); H
+#is_surj(H)
+
+#Drew first curve on zulip
+#H = HyperellipticCurve( -x^6+6*x^5+3*x^4+5*x^3+23*x^2-3*x+5,x); H
+#is_surj(H)
+
+#Drew second curve on zulip
+#H=HyperellipticCurve(3*x^5+9*x^4+14*x^3+39*x^2+16,x^3); H
+#is_surj(H)
+
+#Curve from Calegari table
+#H=HyperellipticCurve(7*x^6-22*x^5-7*x^4 + 61*x^3 -3*x^2-54*x-12,x);H
+#is_surj(H)
+
+#Random curve from LMFDB
+#H = HyperellipticCurve(R([0, 1, 16, 72, 33, 4]), R([0, 1])); H
+#is_surj(H)
