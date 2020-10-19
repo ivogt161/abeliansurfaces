@@ -279,6 +279,17 @@ def special_divisors(N):
     return D
 
 
+def get_cuspidal_levels(N, max_cond_exp_2=None):
+
+    if max_cond_exp_2 is not None:
+        # if we're here, then N is the even poor mans conductor
+        conductor_away_two = N/2  # recall we put a 2 in the poor mans conductor
+        possible_conductors = [conductor_away_two * 2^i for i in range(max_cond_exp_2 + 1)]
+        return list(set([d for N in possible_conductors for d in special_divisors(N)]))  # not ordered, hopefully not a problem.
+    else:
+        return special_divisors(N)
+
+
 def create_polynomial_database(path_to_datafile, levels_of_interest):
 
     df = pd.read_csv(path_to_datafile, sep=":", header=None, names=["N", "p", "coeffs"])
@@ -290,9 +301,10 @@ def create_polynomial_database(path_to_datafile, levels_of_interest):
     return df_relevant
 
 
-def set_up_cuspidal_spaces(N, path_to_datafile=None):
+def set_up_cuspidal_spaces(N, path_to_datafile=None, max_cond_exp_2=None):
+    D = get_cuspidal_levels(N, max_cond_exp_2)
     if path_to_datafile is not None:
-        levels_of_interest = [(d,0,0) for d in divisors(N) if d <= sqrt(N)]
+        levels_of_interest = [(d,0,0) for d in D]
 
         # There are no modular forms of level < 11
         bad_levels = [(i,0,0) for (i,0,0) in levels_of_interest if i in range(11)]
@@ -302,7 +314,6 @@ def set_up_cuspidal_spaces(N, path_to_datafile=None):
         DB = create_polynomial_database(path_to_datafile, levels_of_interest)
         return levels_of_interest, DB
     else:
-    	D = special_divisors(N)
     	return [(CuspForms(d),0,0) for d in D], None
 
 
@@ -396,12 +407,12 @@ load('find_surj_from_list.sage')
 #########################################################
 
 
-def find_nonmaximal_primes(C, N, path_to_datafile=None):
+def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     """The main function
 
     Args:
         C : Hyperelliptic Curve
-        N : The conductor of C
+        N (optional) : The conductor of C if known
         path_to_datafile (optional): Where to find the dataset containing the
         Hecke characteristic polynomials. Defaults to None
 
@@ -413,11 +424,21 @@ def find_nonmaximal_primes(C, N, path_to_datafile=None):
     M2p2nsd = 0
     y2p2nsd = 0
 
+    if N is None:
+        f,h = C.hyperelliptic_polynomials()
+        red_data = genus2reduction(h,f)
+        N = red_data.conductor  # is this the true conductor if red_data.prime_to_2_conductor_only is False?
+        max_cond_exp_2 = None
+        if red_data.prime_to_2_conductor_only:
+            # I think this is the case where we don't know exactly the two-part of conductor
+            N = 2*N
+            max_cond_exp_2 = red_data.minimal_disc.valuation(2)
+
     #MCusp is a list of the form <S,M,y>, where S is either a space of cusp forms or
     #a level, M is an integer such that all primes with a reducible sub isomorphic to the
     #rep of a cusp form in S divide M, y is a counter for the number of nontrivial Frobenius
     #conditions go into M
-    MCusp, DB = set_up_cuspidal_spaces(N, path_to_datafile=path_to_datafile)
+    MCusp, DB = set_up_cuspidal_spaces(N, path_to_datafile=path_to_datafile, max_cond_exp_2=None)
 
     #MQuad is a list of the form <phi,M,y>, where phi is a quadratic character, M is the integer
     #all nonsurjective primes governed by phi must divide, and y is counter for the number of nontrivial
@@ -487,7 +508,7 @@ def nonmaximal_wrapper(row, path_to_datafile=None):
 
     C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
     conductor_of_C = Integer(row['labels'].split(".")[0])
-    possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=path_to_datafile)
+    possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
     probably_nonmaximal_primes = is_surj(C, L=list(possibly_nonmaximal_primes))
     return possibly_nonmaximal_primes, probably_nonmaximal_primes
 
@@ -544,12 +565,12 @@ in the LMFDB, the following will do it. It will output the file in the cwd.
 If however you only want to run it on a specific curve, then the following will do
 """
 
-# print("Running one example...")
-# f = x^2 + x
-# h = x^3 + 1
-# C = HyperellipticCurve(R(f),R(h))
-# conductor_of_C = 249
-# possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-# probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
-# print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
-#                                                     probably_nonmaximal_primes))
+print("Running one example...")
+f = x^2 + x
+h = x^3 + 1
+C = HyperellipticCurve(R(f),R(h))
+conductor_of_C = 249
+possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
+probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
+print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+                                                    probably_nonmaximal_primes))
