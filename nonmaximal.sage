@@ -284,7 +284,7 @@ def get_cuspidal_levels(N, max_cond_exp_2=None):
     if max_cond_exp_2 is not None:
         # if we're here, then N is the even poor mans conductor
         conductor_away_two = N/2  # recall we put a 2 in the poor mans conductor
-        possible_conductors = [conductor_away_two * 2^i for i in range(max_cond_exp_2)]
+        possible_conductors = [conductor_away_two * 2^i for i in range(max_cond_exp_2 + 1)]
         return list(set([d for N in possible_conductors for d in special_divisors(N)]))  # not ordered, hopefully not a problem.
     else:
         return special_divisors(N)
