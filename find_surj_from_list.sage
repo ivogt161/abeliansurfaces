@@ -251,6 +251,8 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
                         to_remove.append(l)
             for l in to_remove:
                 to_check.remove(l)
+            if len(to_check) == 0:
+                break
     if verbose:
         return witnesses
     probably_non_surj_primes = []
