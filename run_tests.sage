@@ -22,7 +22,7 @@ def run_code_on_tests(row, path_to_datafile=None):
     print(C)
     conductor_of_C = Integer(row['conductor'])
     possibly_nonmaximal_primes = find_nonmaximal_primes(C, conductor_of_C, path_to_datafile=path_to_datafile)
-    probably_nonmaximal_primes = is_surj(C, L=list(possibly_nonmaximal_primes))
+    probably_nonmaximal_primes = is_surjective(C, L=list(possibly_nonmaximal_primes))
     return possibly_nonmaximal_primes, probably_nonmaximal_primes
 
 df = pd.read_csv(TEST_DATA)
