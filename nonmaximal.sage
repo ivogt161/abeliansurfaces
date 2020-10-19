@@ -10,10 +10,12 @@ Code is organized according to maximal subgroups of GSp_4"""
 # Imports
 import ast
 import pandas as pd
+import string
 
 # Globals
 
 R.<x> = PolynomialRing(QQ)
+x = R.gen()
 
 # In order for the following file to be found, it is assumed that the cwd is
 # the top directory of abeliansurfaces. This should be the case if you're loading
@@ -504,13 +506,15 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
 
 def nonmaximal_wrapper(row, path_to_datafile=None):
-    """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surj'"""
+    """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
 
     C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
     conductor_of_C = Integer(row['labels'].split(".")[0])
     possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
-    probably_nonmaximal_primes = is_surj(C, L=list(possibly_nonmaximal_primes))
+    probably_nonmaximal_primes = is_surjective(C, L=list(possibly_nonmaximal_primes))
     return possibly_nonmaximal_primes, probably_nonmaximal_primes
+
+
 
 
 def get_many_results(subset=None):
@@ -559,7 +563,7 @@ If you want to run the code on either all of, a subset of, the genus 2 curves
 in the LMFDB, the following will do it. It will output the file in the cwd.
 """
 
-# get_many_results(subset=3)
+get_many_results(subset=5)
 
 """
 If however you only want to run it on a specific curve, then the following will do
@@ -571,6 +575,6 @@ h = x^3 + 1
 C = HyperellipticCurve(R(f),R(h))
 conductor_of_C = 249
 possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-probably_nonmaximal_primes = is_surj(C,L=list(possibly_nonmaximal_primes))
+probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
 print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
                                                     probably_nonmaximal_primes))
