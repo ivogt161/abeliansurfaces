@@ -235,7 +235,8 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
 
     """
     f,h = H.hyperelliptic_polynomials()
-    C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
+    # C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
+    C = 2 * prod(genus2reduction(h,f).local_data.keys())
     witnesses = _init_wit(L)
     exps = _init_exps()
     to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
