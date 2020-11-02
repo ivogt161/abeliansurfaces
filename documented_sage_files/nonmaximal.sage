@@ -1,19 +1,35 @@
-"""nonmaximal.sage
+r"""
 
-Given a genus 2 curve specifed by polynomials f, h:
-C:  y^2  + h(x)*y = f(x)
-Determines the finite set of primes ell for which the Galois
-action on J_C[ell] is nonmaximal.
+Determines the finite set of primes for which the Galois action is nonmaximal.
 
-Code is organized according to maximal subgroups of GSp_4"""
+Given a genus 2 curve `C: y^2 + h(x)*y = f(x)`, determines the finite set of
+primes `l` for which the Galois action on `J_C[l]` is nonmaximal. The Code is
+organized according to maximal subgroups of GSp_4.
+AUTHORS:
+- TODO (2020-10-30): initial version
 
-# Imports
+- person (date in ISO year-month-day format): short desc
+
+"""
+
+# ****************************************************************************
+#       Copyright (C) 2020 YOUR NAME <your email>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#                  https://www.gnu.org/licenses/
+# ****************************************************************************
 import ast
 import pandas as pd
 import string
 import logging
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S',
-    filename='all_curves_3010.log', level=logging.DEBUG)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s: %(message)s',
+    datefmt='%H:%M:%S',
+    filename='all_curves_3010.log', level=logging.DEBUG
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +39,9 @@ R.<x> = PolynomialRing(QQ)
 x = R.gen()
 
 # In order for the following file to be found, it is assumed that the cwd is
-# the top directory of abeliansurfaces. This should be the case if you're loading
-# this file into sage. If there's any problem, making the following path absolute
-# should resolve the issue.
+# the top directory of abeliansurfaces. This should be the case if you're
+# loading this file into sage. If there's any problem, making the
+# following path absolute should resolve the issue.
 
 PATH_TO_MY_TABLE = 'gamma0_wt2_hecke_lpolys_1000.txt'
 OUTPUT_FILE = "g2c_results_verbose.csv"
@@ -35,33 +51,41 @@ OUTPUT_FILE = "g2c_results_verbose.csv"
 #                   Auxiliary functions            #
 #                            #
 #########################################################
+# TODO: we should make these functions (weakly private)
+
 
 def p_part(p, N):
     if N != 0:
-        return p^valuation(N,p)
+        return p^valuation(N, p)
     else:
         return 1
 
 
 def poor_mans_conductor(C):
-    f,h = C.hyperelliptic_polynomials()
-    red_data = genus2reduction(h,f)
+    f, h = C.hyperelliptic_polynomials()
+    red_data = genus2reduction(h, f)
     N = red_data.conductor
     if red_data.prime_to_2_conductor_only:
         N = 2*N
     return N
 
+
 def maximal_square_divisor(N):
     PP = prime_factors(N)
     n = 1
     for p in PP:
-        n = n * p^(floor(valuation(N,p)/2))
+        n = n * p^(floor(valuation(N, p)/2))
 
     return n
 
+
 def true_conductor(C):
-    print("Warning. This hasn't yet been implemented. The return value isn't actually the conductor.")
+    print(
+        "Warning. This hasn't yet been implemented.",
+        "The return value isn't actually the conductor."
+    )
     return poor_mans_conductor(C)
+
 
 def update_verbose_results(dict_to_update, new_keys, value_str):
     if new_keys:
@@ -72,15 +96,17 @@ def update_verbose_results(dict_to_update, new_keys, value_str):
                 dict_to_update[k] = value_str
     return dict_to_update
 
-def format_verbose_column(type_dict, wit_dict):
 
+def format_verbose_column(type_dict, wit_dict):
     surj_primes_verbose = []
 
     for k in wit_dict:
         if -1 in wit_dict[k] or 0 in wit_dict[k]:
-            surj_primes_verbose.append((k,type_dict[k],wit_dict[k]))
+            surj_primes_verbose.append((k, type_dict[k], wit_dict[k]))
 
-    return [k for k,v,wit in surj_primes_verbose],['{}.{}:wit={}'.format(str(k),v,wit) for k,v,wit in surj_primes_verbose]
+    return [k for k, v, wit in surj_primes_verbose],
+    ['{}.{}:wit={}'.format(str(k), v, wit)
+        for k, v, wit in surj_primes_verbose]
 
 
 #########################################################
@@ -96,19 +122,19 @@ def maximal_quadratic_conductor(N):
     else:
         return radical(N)
 
+
 def character_list(N):
-    #N = poor_mans_conductor(C)
+    # N = poor_mans_conductor(C)
     c = maximal_quadratic_conductor(N)
-    D = DirichletGroup(c,base_ring=QQ,zeta_order=2)
+    D = DirichletGroup(c, base_ring=QQ, zeta_order=2)
     return [phi for phi in D if phi.conductor() != 1]
 
 
 def set_up_quadratic_chars(N):
-    return [(phi,0,0) for phi in character_list(N)]
+    return [(phi, 0, 0) for phi in character_list(N)]
 
 
-
-def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
+def rule_out_quadratic_ell_via_Frob_p(p, fp, MM):
     """Provide a summary of what this method is doing.
 
     Args:
@@ -117,7 +143,7 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
         MM (list): list of the form <phi,M,y>, where phi is a non-trivial
         quadratic character, all primes ell for which there is a quadratic
         obstruction associated with phi must divide M, y is a counter for the
-	the number of nontrivial Frobenius constraints going into M
+        the number of nontrivial Frobenius constraints going into M
 
     Returns:
         (list): TODO
@@ -127,15 +153,14 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
         return MM
     else:
         MM0 = []
-        for phi,M,y in MM:
-            if (M == 1 or phi(p) != -1 or y>1):
-                MM0.append((phi,M,y))
+        for phi, M, y in MM:
+            if (M == 1 or phi(p) != -1 or y > 1):
+                MM0.append((phi, M, y))
             else:
-                MM0.append((phi,gcd(M,p*ap), y+1))
+                MM0.append((phi, gcd(M, p*ap), y+1))
 
 #        MM0 = [(phi,M/(p_part(2,M)*p_part(3,M)), y) for phi,M,y in MM0]
         return MM0
-
 
 
 #########################################################
@@ -144,11 +169,12 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
 #                            #
 #########################################################
 
-#This should probably be update with the GCD of the return value and 120
-def compute_f_from_d(d,p):
-	return Integers(d)(p).multiplicative_order()
+# This should probably be update with the GCD of the return value and 120
+def compute_f_from_d(d, p):
+    return Integers(d)(p).multiplicative_order()
 
-def rule_out_one_dim_ell(p,fp,d,M):
+
+def rule_out_one_dim_ell(p, fp, d, M):
     """Zev's direct implementation of what is in Dieulefait SS 3.1 and 3.2.
     Warning: some bugs because the conductor used here is wrong at 2
 
@@ -162,48 +188,46 @@ def rule_out_one_dim_ell(p,fp,d,M):
         [type]: [description]
     """
     if M != 1:
-        f = compute_f_from_d(d,p)
+        f = compute_f_from_d(d, p)
         x = fp.variables()[0]
-        M = gcd(M,p*fp.resultant(x^f-1))
-
+        M = gcd(M, p*fp.resultant(x^f-1))
     return M
 
 
-def rule_out_related_two_dim_ell_case1(p,fp,d,M):
+def rule_out_related_two_dim_ell_case1(p, fp, d, M):
     if M != 1:
-        f = compute_f_from_d(d,p)
+        f = compute_f_from_d(d, p)
         ap = -fp.coefficients(sparse=false)[3]
         bp = fp.coefficients(sparse=false)[2]
         x = fp.variables()[0]
 
-        Q = (x*bp - 1 - p^2*x^2)*(p*x + 1)^2 - ap^2*p*x^2
-        M = gcd(M,p*Q.resultant(x^f-1))
-
+        Q = (x*bp-1-p^2*x^2)*(p*x + 1)^2 - ap^2*p*x^2
+        M = gcd(M, p*Q.resultant(x^f-1))
     return M
 
-def rule_out_related_two_dim_ell_case2(p,fp,d,M):
+
+def rule_out_related_two_dim_ell_case2(p, fp, d, M):
     if M != 1:
-        f = compute_f_from_d(d,p)
+        f = compute_f_from_d(d, p)
         ap = -fp.coefficients(sparse=false)[3]
         bp = fp.coefficients(sparse=false)[2]
         x = fp.variables()[0]
 
-        Q = (x*bp - p - p*x^2)*(x + 1)^2 - ap^2*x^2
-        M = gcd(M,p*Q.resultant(x^f-1))
+        Q = (x*bp-p-p*x^2)*(x + 1)^2 - ap^2*x^2
+        M = gcd(M, p*Q.resultant(x^f-1))
 
     return M
 
-"""
-Isabel's code using the fact that the exponent of the determinant
-character divides 120.
+# Isabel's code using the fact that the exponent of the determinant
+# character divides 120.
 
-the following three functions implement the following for n=2,3,5:
-f(x) = x^4 - t*x^3 + s*x^2 - p^alpha*t*x + p^(2*alpha) is a
-degree 4 polynomial whose roots multiply in pairs to p^alpha
-returns the tuple (p, tn, sn, alphan) of the polynomial
-f^(n)(x) = x^4 - tn*x^3 + sn*x^2 - p^(alphan)*tn*x + p^(2*alphan)
-whose roots are the nth powers of the roots of f
-"""
+# the following three functions implement the following for n=2,3,5:
+# f(x) = x^4 - t*x^3 + s*x^2 - p^alpha*t*x + p^(2*alpha) is a
+# degree 4 polynomial whose roots multiply in pairs to p^alpha
+# returns the tuple (p, tn, sn, alphan) of the polynomial
+# f^(n)(x) = x^4 - tn*x^3 + sn*x^2 - p^(alphan)*tn*x + p^(2*alphan)
+# whose roots are the nth powers of the roots of f
+
 
 def power_roots2(ptsa):
     p, t, s, alpha = ptsa
@@ -212,21 +236,29 @@ def power_roots2(ptsa):
 
 def power_roots3(ptsa):
     p, t, s, alpha = ptsa
-    return (p, t^3 - 3*s*t + 3*p^alpha*t, s^3 - 3*p^alpha*s*t^2 + 3*p^(2*alpha)
-            *t^2 + 3*p^(2*alpha)*t^2 - 3*p^(2*alpha)*s, 3*alpha)
+    return (
+        p,
+        t^3 - 3*s*t + 3*p^alpha*t, s^3 - 3*p^alpha*s*t^2 + 3*p^(2*alpha)*t^2
+        + 3*p^(2*alpha)*t^2 - 3*p^(2*alpha)*s, 3*alpha
+    )
 
 
 def power_roots5(ptsa):
     p, t, s, alpha = ptsa
-    return (p, t^5 - 5*s*t^3 + 5*s^2*t + 5*p^alpha*t^3 - 5*p^alpha*s*t -
-    5*p^(2*alpha)*t, s^5 - 5*p^alpha*s^3*t^2 + 5*p^(2*alpha)*s*t^4 +
-    5*p^(2*alpha)*s^2*t^2 - 5*p^(3*alpha)*t^4 + 5*p^(2*alpha)*s^2*t^2 -
-    5*p^(2*alpha)*s^3 - 5*p^(3*alpha)*t^4 - 5*p^(3*alpha)*s*t^2 +
-    5*p^(4*alpha)*t^2 + 5*p^(4*alpha)*t^2 + 5*p^(4*alpha)*s, 5*alpha)
+    return (
+        p,
+        t^5 - 5*s*t^3 + 5*s^2*t + 5*p^alpha*t^3 - 5*p^alpha*s*t
+        - 5*p^(2*alpha)*t,
+        s^5 - 5*p^alpha*s^3*t^2 + 5*p^(2*alpha)*s*t^4 + 5*p^(2*alpha)*s^2*t^2
+        - 5*p^(3*alpha)*t^4 + 5*p^(2*alpha)*s^2*t^2 - 5*p^(2*alpha)*s^3
+        - 5*p^(3*alpha)*t^4 - 5*p^(3*alpha)*s*t^2 + 5*p^(4*alpha)*t^2
+        + 5*p^(4*alpha)*t^2 + 5*p^(4*alpha)*s,
+        5*alpha
+    )
 
 
-#put these together to do any power dividing 120 that we actually need
-#c is the power
+# put these together to do any power dividing 120 that we actually need
+# c is the power
 def power_roots(cptsa):
     c, p, t, s, alpha = cptsa
     if 120 % c != 0:
@@ -246,19 +278,21 @@ def power_roots(cptsa):
     return ptsa
 
 
-#given a quartic f whose roots multiply to p^alpha in pairs,
-#returns the quartic whose roots are the products of roots
-#of f that DO NOT multiply to p^alpha
+# given a quartic f whose roots multiply to p^alpha in pairs,
+# returns the quartic whose roots are the products of roots
+# of f that DO NOT multiply to p^alpha
 def roots_pairs_not_p(ptsa):
     p, t, s, alpha = ptsa
     return (p, s - 2*p, p*t^2 - 2*p*s + 2*p^2, 2*alpha)
 
-#t and s are the first and second elementary symmetric functions in the
-#roots of the characteristic polynomial of Frobenius at p for a curve C
-#M is an integer such that every prime ell for which J_C[ell] could be
-#1 + 3 reducible divides M
-#y is a counter for the number of nontrivial Frobenius conditions going
-#into M
+# t and s are the first and second elementary symmetric functions in the
+# roots of the characteristic polynomial of Frobenius at p for a curve C
+# M is an integer such that every prime ell for which J_C[ell] could be
+# 1 + 3 reducible divides M
+# y is a counter for the number of nontrivial Frobenius conditions going
+# into M
+
+
 def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = power_roots((c, p, t, s, 1))
     Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
@@ -268,12 +302,14 @@ def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
     else:
         return M, y
 
-#t and s are the first and second elementary symmetric functions in the
-#roots of the characteristic polynomial of Frobenius at p for a curve C
-#M is an integer such that every prime ell for which J_C[ell] could be
-#2+2 non-self-dual type reducible divides M
-#y is a counter for the number of nontrivial Frobenius conditions going
-#into M
+# t and s are the first and second elementary symmetric functions in the
+# roots of the characteristic polynomial of Frobenius at p for a curve C
+# M is an integer such that every prime ell for which J_C[ell] could be
+# 2+2 non-self-dual type reducible divides M
+# y is a counter for the number of nontrivial Frobenius conditions going
+# into M
+
+
 def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = roots_pairs_not_p((p, t, s, 1))
     p, tnew, snew, alphanew = power_roots((c, p, tnew, snew, alphanew))
@@ -285,62 +321,68 @@ def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
         return M, y
 
 
-
 #########################################################
 #                            #
 #          Reducible (modular forms case)        #
 #                            #
 #########################################################
 
-
 def special_divisors(N):
     D0 = [d for d in divisors(N) if d <= sqrt(N)]
     D0.reverse()
     D = []
     for d0 in D0:
-            if all([d % d0 != 0 for d in D]):
-                    D.append(d0)
+        if all([d % d0 != 0 for d in D]):
+            D.append(d0)
 
     D.reverse()
     return D
 
 
 def get_cuspidal_levels(N, max_cond_exp_2=None):
-
     if max_cond_exp_2 is not None:
         # if we're here, then N is the even poor mans conductor
-        conductor_away_two = N/2  # recall we put a 2 in the poor mans conductor
-        possible_conductors = [conductor_away_two * 2^i for i in range(max_cond_exp_2 + 1)]
-        return list(set([d for N in possible_conductors for d in special_divisors(N)]))  # not ordered, hopefully not a problem.
+
+        # recall we put a 2 in the poor mans conductor
+        conductor_away_two = N/2
+        possible_conductors = [conductor_away_two * 2^i 
+                               for i in range(max_cond_exp_2 + 1)]
+        # unordered, hopefully not a problem.
+        return list(set([d for N in possible_conductors
+                         for d in special_divisors(N)]))
     else:
         return special_divisors(N)
 
 
 def create_polynomial_database(path_to_datafile, levels_of_interest):
-
-    df = pd.read_csv(path_to_datafile, sep=":", header=None, names=["N", "p", "coeffs"])
-    actual_levels_of_interest = [i for i,j,k in levels_of_interest]
+    df = pd.read_csv(
+        path_to_datafile,
+        sep=":", header=None,
+        names=["N", "p", "coeffs"]
+    )
+    actual_levels_of_interest = [i for i, j, k in levels_of_interest]
     df_relevant = df.loc[df["N"].isin(actual_levels_of_interest)].copy()
 
     df_relevant["coeffs"] = df_relevant["coeffs"].apply(ast.literal_eval)
-
     return df_relevant
 
 
 def set_up_cuspidal_spaces(N, path_to_datafile=None, max_cond_exp_2=None):
     D = get_cuspidal_levels(N, max_cond_exp_2)
     if path_to_datafile is not None:
-        levels_of_interest = [(d,0,0) for d in D]
+        levels_of_interest = [(d, 0, 0) for d in D]
 
         # There are no modular forms of level < 11
-        bad_levels = [(i,0,0) for (i,0,0) in levels_of_interest if i in range(11)]
+        bad_levels = [(i, 0, 0) for (i, 0, 0) in levels_of_interest
+                      if i in range(11)]
 
-        levels_of_interest = [z for z in levels_of_interest if z not in bad_levels]
+        levels_of_interest = [z for z in levels_of_interest
+                              if z not in bad_levels]
 
         DB = create_polynomial_database(path_to_datafile, levels_of_interest)
         return levels_of_interest, DB
     else:
-    	return [(CuspForms(d),0,0) for d in D], None
+        return [(CuspForms(d), 0, 0) for d in D], None
 
 
 def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
@@ -354,14 +396,15 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     return R(substitute_poly(a=0, b=x))
 
 
-def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
+def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
     """This should return the left hand side of Equation 3.8.
 
     Args:
-        cusp_form_space ([type]): either a space of weight 2 cuspforms with trivial
-        Nebentypus or a level (given as an integer)
+        cusp_form_space ([type]): either a space of weight 2 cuspforms with 
+        trivial Nebentypus or a level (given as an integer)
         p (int): prime number
-	coeff_table: a filename with a list of characteristic polyomials for spaces of modular forms
+        coeff_table: a filename with a list of characteristic polyomials for
+        spaces of modular forms
 
     Returns:
         [pol]: an integer polynomial of twice the dimension of the cuspform
@@ -372,37 +415,46 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
         return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
     else:
 
-        slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space)
-                                               & (coeff_table["p"] == p)]
+        slice_of_coeff_table = coeff_table.loc[
+                                (coeff_table["N"] == cusp_form_space)
+                                & (coeff_table["p"] == p)]
 
         if slice_of_coeff_table.shape[0] == 1:
-            logger.info("doing pandas stuff for level {}".format(cusp_form_space))
+            logger.info("doing pandas stuff for level {}"
+                        .format(cusp_form_space))
             hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
-            hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i for i in range(len(hecke_charpoly_coeffs))])
+            hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i
+                                  for i in range(len(hecke_charpoly_coeffs))])
         else:  # i.e., can't find data in database
-            warning_msg = ("Warning: couldn't find level {} and prime {} in DB.\n"
-                           "Reconstructing on the fly...").format(cusp_form_space, p)
+            warning_msg = ("Warning: couldn't find level {} and prime {} "
+                           "in DB.\nReconstructing on the fly...")\
+                           .format(cusp_form_space, p)
             logger.info(warning_msg)
             CuspFormSpaceOnFly = CuspForms(cusp_form_space)
-            hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
+            hecke_charpoly =\
+                reconstruct_hecke_poly_from_trace_polynomial(
+                    CuspFormSpaceOnFly, p
+                )
 
         return hecke_charpoly
 
 
-def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=None):
-    if M != 1 and y<2:
-        Tp = get_hecke_characteristic_polynomial(S,p, coeff_table=coeff_table)
+def rule_out_cuspidal_space_using_Frob_p(S, p, fp, M, y, coeff_table=None):
+    if M != 1 and y < 2:
+        Tp = get_hecke_characteristic_polynomial(S, p, coeff_table=coeff_table)
         res = fp.resultant(Tp)
         if res != 0:
-            return gcd(M,p*res), y+1
+            return gcd(M, p*res), y+1
     return M, y
 
 
-def rule_out_cuspidal_spaces_using_Frob_p(p,fp,MC, coeff_table = None):
+def rule_out_cuspidal_spaces_using_Frob_p(p, fp, MC, coeff_table=None):
     MC0 = []
-    for S,M,y in MC:
-        Mm, yy = rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=coeff_table)
-        MC0.append((S,Mm,yy))
+    for S, M, y in MC:
+        Mm, yy = rule_out_cuspidal_space_using_Frob_p(
+            S, p, fp, M, y, coeff_table=coeff_table
+        )
+        MC0.append((S, Mm, yy))
     return MC0
 
 

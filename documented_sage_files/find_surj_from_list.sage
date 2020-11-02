@@ -1,13 +1,50 @@
-"""find_surj_from_list.sage
-Given a typical hyperelliptic curve H over the rationals, is_surjective(H) returns a list of primes less than 1000 at which the residual
-Galois repsentation might not be surjective. The primes less than 1000 outside of the returned list are verified to be surjective.
+r"""
+Lists primes whose residual Galois representations might be non-surjective
+
+Given a typical hyperelliptic curve `H` over `\\QQ` of genus `2`, returns
+a list of primes less than `1000` at which the residual Galois representation
+might not be surjective. The primes less than `1000` outside of the returned
+list are verified to be surjective.
+
+EXAMPLES::
+.. TODO
+
+AUTHORS:
+- TODO (2020-10-30): initial version
+
+- person (date in ISO year-month-day format): short desc
+
 """
 
+# ****************************************************************************
+#       Copyright (C) 2020 YOUR NAME <your email>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#                  https://www.gnu.org/licenses/
+# ****************************************************************************
+
+
 def _init_exps():
+    r"""
+    Return characteristic polynomials of elements in the exceptional subgroup.
+
+    OUTPUT: A dictionary
+
+    - whose keys are `l = 3,5,7` and
+
+    - whose associated values are the lists of characteristic polynomials of
+    the matrices in the exceptional subgroup of `\\text{GSp}(4,l)`.
+
+    EXAMPLES:
+
+    TODO
     """
-    Return a dictionary with keys l = 3, 5, and 7; for each l, the associated value is the list of characteristic polynomials of the matrices in the exceptional subgroup of GSp(4,l).
-    """
-    #char3 is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,3) (up to conjugation) that isn't ruled out by surj_tests
+    # char3 is the list of characteristic polynomials of matrices in the one
+    # subgroup of GSp(4,3) (up to conjugation) that isn't ruled out by
+    # surj_tests
     R.<x> = PolynomialRing(Zmod(3))
     char3 = [x^4 + 2*x^3 + x^2 + 2*x + 1,
         x^4 + 1,
@@ -21,8 +58,11 @@ def _init_exps():
         x^4 + 2*x^3 + 2*x^2 + x + 1,
         x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
         x^4 + x^2 + 1,
-        x^4 + 2*x^3 + x^2 + x + 1]
-    #char5 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,5) (up to conjugation) that isn't ruled out by surj_tests
+        x^4 + 2*x^3 + x^2 + x + 1
+    ]
+    # char5 Is the list of characteristic polynomials of matrices in the one
+    # subgroup of GSp(4,5) (up to conjugation) that isn't ruled out by
+    # surj_tests
     R.<x> = PolynomialRing(Zmod(5))
     char5 = [x^4 + x^3 + 2*x^2 + x + 1,
         x^4 + x^3 + 4*x + 1,
@@ -68,8 +108,11 @@ def _init_exps():
         x^4 + x^3 + 2*x^2 + 4*x + 1,
         x^4 + x^3 + 3*x^2 + x + 1,
         x^4 + x^3 + x^2 + 4*x + 1,
-        x^4 + 3*x^3 + 2*x + 1]
-    #char7 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,7) (up to conjugation) that isn't ruled out by surj_tests
+        x^4 + 3*x^3 + 2*x + 1
+    ]
+    # char7 is the list of characteristic polynomials of matrices in the one
+    # subgroup of GSp(4,7) (up to conjugation) that isn't ruled out
+    # by surj_tests
     R.<x> = PolynomialRing(Zmod(7))
     char7 = [x^4 + 2*x^3 + 5*x^2 + 5*x + 1,
         x^4 + 5*x^3 + 5*x^2 + 2*x + 1,
@@ -124,49 +167,113 @@ def _init_exps():
         x^4 + 3*x^2 + 2,
         x^4 + 6*x^3 + 2*x^2 + 4*x + 2,
         x^4 + 4*x^2 + 4,
-        x^4 + 5*x^3 + 4*x^2 + 6*x + 2]
-    return {3 : char3, 5 : char5, 7 : char7}
+        x^4 + 5*x^3 + 4*x^2 + 6*x + 2
+    ]
+    return {3: char3, 5: char5, 7: char7}
 
 
 def _init_wit(L):
-    """
-    Return a list for witnesses with all entries initially all set to zero, in the following format:
+    r"""
+    Return a formatted dictionary to be passed to the is_surjective function.
+
+    INPUT:
+
+    - ``L`` -- a list of primes
+
+    OUTPUT: A dictionary
+
+    - whose keys are the prime numbers in ``L`` and
+
+    - whose associated values are the lists for witnesses with all entries
+      initially all set to zero, in the following format:
         2: [_] <-> [_is_surj_at_2 ]
-        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
-        5: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
-        7: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
-        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
+        3: [_,_,_] <-> [
+                        witness for _surj_test_A,
+                        witness for _surj_test_B,
+                        witness for _surj_test_exp
+                       ]
+        5: [_,_,_] <-> [
+                        witness for _surj_test_A,
+                        witness for _surj_test_B,
+                        witness for _surj_test_exp
+                       ]
+        7: [_,_,_] <-> [
+                        witness for _surj_test_A,
+                        witness for _surj_test_B,
+                        witness for _surj_test_exp
+                       ]
+        other: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
+
+    EXAMPLES:
+
+    TODO
     """
     witnesses = {}
     for l in L:
         if l == 2:
             witnesses[l] = [0]
-        elif l in [3,5,7]:
-            witnesses[l] = [0,0,0]
+        elif l in [3, 5, 7]:
+            witnesses[l] = [0, 0, 0]
         else:
-            witnesses[l] = [0,0]
+            witnesses[l] = [0, 0]
     return witnesses
 
 
-def _is_surj_at_2(f,h):
-    """
-    Return True if and only if the mod 2 Galois image of the Jacobian of y^2 + h(x) y = f(x) is surjective, i.e. if and
-    only if the Galois group of the polynomial 4*f+h^2 is all of S_6.
+def _is_surj_at_2(f, h):
+    r"""
+    Return True if the mod 2 Galois representation is surjective.
+
+    The mod `2` Galois representation is that of the Jacobian of the
+    genus `2` curve given by `y^2 + h(x) y = f(x)`.
+
+    INPUT:
+
+    - ``f`` -- singlevariate polynomial; ``f`` must be of degree at most `6`.
+
+    - ``h`` -- singlevariate polynomial; ``g`` must be of degree at most `3`,
+      and must be an element of the same polynomial ring as ``f``.
+      Moreover, the curve must be of genus `2`, so `\\deg h = 3` or
+      `\\deg f = 5` or `6`.
+
+    ALGORITHM:
+
+    The mod `2` Galois representation is surjective if and only if the Galois
+    group of the polynomial `4f + h^2` is all of `S_6`.
+
     """
     F = 4*f + h^2
     return F.is_irreducible() and F.galois_group().order() == 720
 
 
 def _surj_test_A(frob_mod):
-    """
-    Return True if frob_mod is irreducible.
+    r"""
+    Return True if frob_mod is irreducible over is base field.
+
+    INPUT:
+
+    - ``frob_mod`` -- singlevariate polynomial; ``frob_mod`` has
+      coefficients over a finite field `\\GF{q}` for some
+      prime `l`.
+
+    EXAMPLES:
+    TODO
     """
     return frob_mod.is_irreducible()
 
 
 def _surj_test_B(frob_mod):
-    """
-    Return True if frob_mod has nonzero trace and has a linear factor with multiplicity one.
+    r"""
+    Return True if frob_mod has nonzero trace and has a linear factor with
+    multiplicity one.
+
+    INPUT:
+
+    - ``frob_mod`` -- singlevariate polynomial; ``frob_mod`` has
+      coefficients over a finite field `\\GF{l}` for some
+      prime `l`.
+
+    EXAMPLES:
+    TODO
     """
     if -frob_mod[3] != 0:
         for fact in frob_mod.factor():
@@ -176,21 +283,48 @@ def _surj_test_B(frob_mod):
 
 
 def _surj_test_exp(l, frob_mod, exps):
+    r"""
+    Return True if frob_mod is the characteristic polynomial of a matrix that
+    is not in the exceptional subgroup mod `l`.
+
+    INPUT:
+
+    - ``frob_mod`` -- singlevariate polynomial; ``frob_mod`` has
+      coefficients over a finite field `\\GF{l}` for some
+      prime `l`.
+
+    EXAMPLES:
+    TODO
     """
-    Return True if frob_mod is the characteristic polynomial of a matrix that is not in the exceptional subgroup mod l
-    """
-    return not frob_mod in exps[l]
+    return frob_mod not in exps[l]
 
 
 def _update_wit(l, p, frob, f, h, exps, wit):
     """
-    Return an updated list of witnesses, based on surjectivity tests for frob at p.
+    Return an updated list of witnesses, based on surjectivity tests for frob
+    at p.
+
+    INPUT:
+
+    - ``l`` -- prime integer.
+
+    - ``p`` -- prime integer; must not equal ``l``.
+
+    - ``frob`` -- singlevariate integer polynomial; 
+
+    - ``f`` -- singlevariate polynomial;
+
+    - ``g`` -- singlevariate polynomial;
+
+    - ``exps`` -- TODO
+
+    - ``wit`` -- TODO
     """
     frob_mod = frob.change_ring(Zmod(l))
-    for i in range(0,len(wit)):
+    for i in range(0, len(wit)):
         if wit[i] == 0:
             if l == 2:
-                if _is_surj_at_2(f,h):
+                if _is_surj_at_2(f, h):
                     wit[i] = 1
                 else:
                     wit[i] = -1
@@ -205,8 +339,11 @@ def _update_wit(l, p, frob, f, h, exps, wit):
 
 def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
     r"""
-    Return a list of primes in L at which the residual Galois representation of the Jacobian of `H` might not be surjective.
-    Outside of the returned list, all primes in L are surjective. The primes in the returned list are likely non-surjective.
+    Return a list of primes in L at which the residual Galois representation
+    of the Jacobian of `H` might not be surjective.
+
+    Outside of the returned list, all primes in L are surjective. The primes
+    in the returned list are likely non-surjective.
 
     INPUT:
 
@@ -234,21 +371,27 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
         [2, 13]
 
     """
-    f,h = H.hyperelliptic_polynomials()
-    # C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
-    C = 2 * prod(genus2reduction(h,f).local_data.keys())
+    f, h = H.hyperelliptic_polynomials()
+    # An integer which agrees up with the conductor of H: y^2 + h y = f,
+    # except possibly at two. Bad primes of Jac(H) divide it.
+    C = 2 * prod(genus2reduction(h, f).local_data.keys())
     witnesses = _init_wit(L)
     exps = _init_exps()
-    to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
-    for p in primes(3,bound):
+    # to_check is the list of primes for which we still need to determine
+    # surjectivity. Initially, it equals L and we remove primes as their
+    # status is determined.
+    to_check = L.copy()
+    for p in primes(3, bound):
         if C % p != 0:
             Hp = H.change_ring(GF(p))
             frob = Hp.frobenius_polynomial()
             to_remove = []
             for l in to_check:
                 if p != l and 0 in witnesses[l]:
-                    witnesses[l] = _update_wit(l, p, frob, f, h, exps, witnesses[l])
-                    if not 0 in witnesses[l]:
+                    witnesses[l] = _update_wit(
+                        l, p, frob, f, h, exps, witnesses[l]
+                    )
+                    if 0 not in witnesses[l]:
                         to_remove.append(l)
             for l in to_remove:
                 to_check.remove(l)
