@@ -13,7 +13,7 @@ import pandas as pd
 import string
 import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S',
-    filename='all_curves_3010.log', level=logging.DEBUG)
+    filename='all_curves_0211.log', level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -381,11 +381,15 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
             hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i for i in range(len(hecke_charpoly_coeffs))])
         else:  # i.e., can't find data in database
             warning_msg = ("Warning: couldn't find level {} and prime {} in DB.\n"
-                           "Reconstructing on the fly...").format(cusp_form_space, p)
+                           "Assuming no forms here...").format(cusp_form_space, p)
             logger.info(warning_msg)
-            CuspFormSpaceOnFly = CuspForms(cusp_form_space)
-            hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
 
+            if cusp_form_space > 1000:
+                # this should not happen
+                raise ValueError("Somehow we're asking for a big cusp form space?")
+            # CuspFormSpaceOnFly = CuspForms(cusp_form_space)
+            # hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
+            hecke_charpoly = 1
         return hecke_charpoly
 
 
@@ -533,14 +537,14 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     else:
         ell_red_cusp = [(S.level(),prime_factors(M)) for S,M,y in MCusp]
 
-    ell_red_cusp_primes = [p for a,j in ell_red_cusp for p in j]
+    ell_red_cusp_primes = set([p for a,j in ell_red_cusp for p in j])
     non_maximal_primes = non_maximal_primes.union(set(ell_red_cusp_primes))
     non_maximal_primes_verbose = update_verbose_results(non_maximal_primes_verbose,
                                                         ell_red_cusp_primes,
                                                         'cusp')
 
     ell_irred = [(phi,prime_factors(M)) for phi,M,t in MQuad]
-    ell_irred_primes = [p for a,j in ell_irred for p in j]
+    ell_irred_primes = set([p for a,j in ell_irred for p in j])
     non_maximal_primes = non_maximal_primes.union(set(ell_irred_primes))
     non_maximal_primes_verbose = update_verbose_results(non_maximal_primes_verbose,
                                                         ell_irred_primes,
