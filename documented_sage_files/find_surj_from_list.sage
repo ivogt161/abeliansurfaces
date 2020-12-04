@@ -202,7 +202,7 @@ def _init_wit(L):
                         witness for _surj_test_B,
                         witness for _surj_test_exp
                        ]
-        other: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
+        other: [_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
 
     EXAMPLES:
 
