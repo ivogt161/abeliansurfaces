@@ -146,12 +146,16 @@ def plot_hist_prime_count(df):
     plt.show()
 
 
-def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist):
+def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None):
     """Plot how many curves were nonmaximal at each prime"""
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlabel("Prime")
     ax.set_ylabel("Number of curves")
     ax.set_title("How many curves were nonmaximal at each prime?")
+
+    if primes_to_exclude:
+        nonmaximal_prime_dist = nonmaximal_prime_dist.loc[~nonmaximal_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
+
     ax.set_xticks(nonmaximal_prime_dist['prime'])
     rects = ax.bar(x=nonmaximal_prime_dist['prime'], height=nonmaximal_prime_dist['f'], color='#17becf', edgecolor='red', lw=3.)
     autolabel(ax, rects)
@@ -159,7 +163,7 @@ def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist):
     plt.show()
 
 
-def plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist):
+def plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=None):
     """
     Plot how many curves were nonmaximal at each prime, showing which of them
     are nonmaximal only because its a torsion prime
@@ -168,6 +172,11 @@ def plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsio
     ax.set_xlabel("Prime")
     ax.set_ylabel("Number of curves")
     ax.set_title("How many curves were nonmaximal at each prime due to torsion?")
+
+    if primes_to_exclude:
+        nonmaximal_prime_dist = nonmaximal_prime_dist.loc[~nonmaximal_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
+        torsion_prime_dist = torsion_prime_dist.loc[~torsion_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
+
     ax.set_xticks(nonmaximal_prime_dist['prime'])
     rects = ax.bar(x=nonmaximal_prime_dist['prime'], height=nonmaximal_prime_dist['f'], color='#17becf', edgecolor='red', lw=3.)
     rects_torsion = ax.bar(x=torsion_prime_dist['prime'], height=torsion_prime_dist['f'], color='green', edgecolor='red', lw=3.)
@@ -226,7 +235,7 @@ if __name__ == "__main__":
     df['torsion_primes'] = df['torsion_primes'].apply(eval)
     df['probably_nonmaximal_primes'] = df.probably_nonmaximal_primes.apply(set)
 
-    df['nontorsion_nonmaximal_primes'] = df['probably_nonmaximal_primes'] - df['torsion_primes']
+    df['nontorsion_nonmaximal_primes'] = df['probably_nonmaximal_primes'] - df['torsion_primes'].apply(set)
 
     torsion_prime_dist = pd.Series(Counter(chain(*df.torsion_primes))).sort_index().rename_axis('prime').reset_index(name='f')
     nontorsion_nonmaximal_prime_dist = pd.Series(Counter(chain(*df.nontorsion_nonmaximal_primes))).sort_index().rename_axis('prime').reset_index(name='f')
@@ -243,8 +252,8 @@ if __name__ == "__main__":
     print("Done. Plotting...")
 
     plot_hist_prime_count(df)
-    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist)
-    plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist)
+    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=[2])
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2])
     plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df)
     plot_bar_stacked_witnesses(witness_stacked_df)
 
