@@ -6,7 +6,7 @@ R = PolynomialRing(QQ, "x")
 x = R.gen()
 
 # csv file name
-filename = "g2c_results_verbose.csv"
+filename = "g2c_results.csv"
 
 # initializing the titles and rows list
 fields = []
