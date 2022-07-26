@@ -13,7 +13,7 @@ import pandas as pd
 import string
 import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S',
-    filename='all_curves_0211.log', level=logging.DEBUG)
+    filename='all_curves_072622.log', level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -346,7 +346,7 @@ def set_up_cuspidal_spaces(N, path_to_datafile=None, max_cond_exp_2=None):
 def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     """Implement Zev and Joe Wetherell's idea"""
 
-    char_T_x = R(cusp_form_space.hecke_polynomial(p))
+    char_T_x = R(cusp_form_space.new_subspace().hecke_polynomial(p))
     S.<a,b> = QQ[]
     char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
     substitute_poly = char_T_a_b(a=1+p*b^2)
@@ -369,7 +369,8 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
     """
 
     if coeff_table is None:
-        return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
+        raise ValueError("We're not computing forms on the fly ...")
+        # return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
     else:
 
         slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space)
@@ -515,7 +516,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
     # we will always include the non-semistable primes.
-    non_maximal_primes = set([p[0] for p in list(N.factor()) if p[1]>1])
+    non_maximal_primes = set([p[0] for p in list(N.factor())])
 
     non_maximal_primes_verbose = dict.fromkeys(non_maximal_primes, 'nss')
 
@@ -623,7 +624,7 @@ If you want to run the code on either all of, a subset of, the genus 2 curves
 in the LMFDB, the following will do it. It will output the file in the cwd.
 """
 
-get_many_results()
+# get_many_results()
 
 # """
 # If however you only want to run it on a specific curve, then the following will do
