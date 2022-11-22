@@ -127,24 +127,53 @@ def _init_exps():
         x^4 + 5*x^3 + 4*x^2 + 6*x + 2]
     return {3 : char3, 5 : char5, 7 : char7}
 
+# G1920 is Mitchell's exceptional group label. The numbers mean trace^2/similitude,
+#  middle coeff/similitude
+G1920_group_data = [
+(0, -2),
+(0, -1),
+(0, 0),
+(0, 1),
+(0, 2),
+(1, 1),
+(2, 1),
+(2, 2),
+(4, 2),
+(4, 3),
+(8, 4),
+(16, 6)
+]
+
+
+# G720 is Mitchell's exceptional group label. The numbers mean trace^2/similitude,
+#  middle coeff/similitude
+G720_group_data = [
+(0, 1), (0, 0), (4, 3), (1, 1), (16, 6), (0, 2), (1, 0), (3, 2), (0, -2)
+]
+
 
 def _init_wit(L):
     """
     Return a list for witnesses with all entries initially all set to zero, in the following format:
         2: [_] <-> [_is_surj_at_2 ]
-        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
-        5: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
-        7: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_exp]
+        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
+        5: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
+        7: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
         3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
     """
     witnesses = {}
     for l in L:
-        if l == 2:
-            witnesses[l] = [0]
-        elif l in [3,5,7]:
-            witnesses[l] = [0,0,0]
+        # if l == 2:
+        #     witnesses[l] = [0]
+        # elif l in [3,5,7]:
+        #     witnesses[l] = [0,0,0]
+        # else:
+        #     witnesses[l] = [0,0,0,0]
+        # witnesses[l] = [0,0,0,0,0]
+        if l > 7:
+            witnesses[l] = [0,0,0,0]
         else:
-            witnesses[l] = [0,0]
+            witnesses[l] = [0]
     return witnesses
 
 
@@ -175,7 +204,27 @@ def _surj_test_B(frob_mod):
     return False
 
 
-def _surj_test_exp(l, frob_mod, exps):
+def _surj_test_1920(l, p, frob_mod):
+
+    trace_sq_over_sim = frob_mod[3]^2 / p
+    middle_over_sim = frob_mod[2] / p
+
+    if (trace_sq_over_sim, middle_over_sim) not in G1920_group_data:
+        return True
+    return False
+
+
+def _surj_test_720(l, p, frob_mod):
+
+    trace_sq_over_sim = frob_mod[3]^2 / p
+    middle_over_sim = frob_mod[2] / p
+
+    if (trace_sq_over_sim, middle_over_sim) not in G720_group_data:
+        return True
+    return False
+
+
+def _surj_test_small_prime(l, frob_mod, exps):
     """
     Return True if frob_mod is the characteristic polynomial of a matrix that is not in the exceptional subgroup mod l
     """
@@ -187,19 +236,46 @@ def _update_wit(l, p, frob, f, h, exps, wit):
     Return an updated list of witnesses, based on surjectivity tests for frob at p.
     """
     frob_mod = frob.change_ring(Zmod(l))
-    for i in range(0,len(wit)):
+    # for i in range(len(wit)):
+    # if wit[i] == 0:
+    #     if l == 2:
+    #         if _is_surj_at_2(f,h):
+    #             wit[i] = 1
+    #         else:
+    #             wit[i] = -1
+    #     elif i == 0 and _surj_test_A(frob_mod):
+    #         wit[i] = p
+    #     elif i == 1 and _surj_test_B(frob_mod):
+    #         wit[i] = p
+    #     elif i == 2 and _surj_test_small_prime(l, p, frob_mod, exps):
+    #         wit[i] = p
+    #     elif i == 3
+
+    for i in range(len(wit)):
         if wit[i] == 0:
-            if l == 2:
-                if _is_surj_at_2(f,h):
-                    wit[i] = 1
+            if l > 7:
+                # means wit has size 4
+                if i == 0 and _surj_test_A(frob_mod):
+                    wit[i] = p
+                elif i == 1 and _surj_test_B(frob_mod):
+                    wit[i] = p
+                elif i == 2 and _surj_test_720(frob_mod):
+                    wit[i] = p
+                elif i == 3 and _surj_test_1920(frob_mod):
+                    wit[i] = p
+            else:
+                # wit vector is singleton
+                if l == 2:
+                    assert i == 0
+                    if _is_surj_at_2(f,h):
+                        wit[i] = 1
+                    else:
+                        wit[i] = -1
                 else:
-                    wit[i] = -1
-            elif i == 0 and _surj_test_A(frob_mod):
-                wit[i] = p
-            elif i == 1 and _surj_test_B(frob_mod):
-                wit[i] = p
-            elif i == 2 and _surj_test_exp(l, frob_mod, exps):
-                wit[i] = p
+                    assert l in [3,5,7]
+                    if _surj_test_small_prime(l, frob_mod, exps):
+                        wit[i] = p
+
     return wit
 
 
