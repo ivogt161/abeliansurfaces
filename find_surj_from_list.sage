@@ -209,7 +209,9 @@ def _surj_test_1920(l, p, frob_mod):
     trace_sq_over_sim = frob_mod[3]^2 / p
     middle_over_sim = frob_mod[2] / p
 
-    if (trace_sq_over_sim, middle_over_sim) not in G1920_group_data:
+    G1920_group_data_mod_ell = [(Zmod(l)(a),Zmod(l)(b)) for (a,b) in G1920_group_data ]
+
+    if (trace_sq_over_sim, middle_over_sim) not in G1920_group_data_mod_ell:
         return True
     return False
 
@@ -219,7 +221,9 @@ def _surj_test_720(l, p, frob_mod):
     trace_sq_over_sim = frob_mod[3]^2 / p
     middle_over_sim = frob_mod[2] / p
 
-    if (trace_sq_over_sim, middle_over_sim) not in G720_group_data:
+    G720_group_data_mod_ell = [(Zmod(l)(a),Zmod(l)(b)) for (a,b) in G720_group_data ]
+
+    if (trace_sq_over_sim, middle_over_sim) not in G720_group_data_mod_ell:
         return True
     return False
 
@@ -259,9 +263,9 @@ def _update_wit(l, p, frob, f, h, exps, wit):
                     wit[i] = p
                 elif i == 1 and _surj_test_B(frob_mod):
                     wit[i] = p
-                elif i == 2 and _surj_test_720(frob_mod):
+                elif i == 2 and _surj_test_720(l, p, frob_mod):
                     wit[i] = p
-                elif i == 3 and _surj_test_1920(frob_mod):
+                elif i == 3 and _surj_test_1920(l, p, frob_mod):
                     wit[i] = p
             else:
                 # wit vector is singleton
