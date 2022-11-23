@@ -630,12 +630,29 @@ in the LMFDB, the following will do it. It will output the file in the cwd.
 # If however you only want to run it on a specific curve, then the following will do
 # """
 
-# print("Running one example...")
-# f = x^2 + x
-# h = x^3 + 1
-# C = HyperellipticCurve(R(f),R(h))
-# conductor_of_C = 249
-# possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-# probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
-# print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
-#                                                     probably_nonmaximal_primes))
+print("Running one example...")
+f = x^2 + x
+h = x^3 + 1
+C = HyperellipticCurve(R(f),R(h))
+conductor_of_C = 249
+possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
+probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+                                                     probably_nonmaximal_primes))
+
+
+print("Running Raymond's examples...")
+
+R.<x> = PolynomialRing(QQ)
+C1 = HyperellipticCurve(R([0, 0, 0, 0, 0, -1]), R([1, 1, 0, 1]))
+C2 = HyperellipticCurve(R([2, 1, 3, 1, 1]), R([0, 1, 1, 1]))
+C3 = HyperellipticCurve(R([2, 1, 1, 2]), R([0, 0, 1, 1]))
+
+curves = [(C1,529), (C2,841), (C3,1225)]
+
+for C,cond_C in curves:
+    print(f"Doing computation for curve of conductor {cond_C}")
+    possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
+    print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
+    probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+    print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
