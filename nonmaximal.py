@@ -5,7 +5,14 @@ C:  y**2  + h(x)*y = f(x)
 Determines the finite set of primes ell for which the Galois
 action on J_C[ell] is nonmaximal.
 
-Code is organized according to maximal subgroups of GSp_4"""
+Code is organized according to maximal subgroups of GSp_4
+
+To run this script in parallel, get the broken down data files into the
+data directory, and then from the top directory, run
+
+find ./data -type f | parallel "sage nonmaximal.py {}"
+
+"""
 
 # Imports
 from sage.all import (
@@ -38,7 +45,6 @@ from sage.all import (
 import argparse
 import ast
 import pandas as pd
-import string
 import pathlib
 import logging
 
@@ -748,7 +754,8 @@ def get_many_results(filename, subset=None):
     df.rename(columns={"data": "polynomials"}, inplace=True)
 
     # We now output the csv results file
-    output_file = filename.split(".")[0] + "_output.csv"
+
+    output_file = pathlib.Path(filename.name).name.split(".")[0] + "_output.csv"
     output_file = OUTPUT_DIR / output_file
     df.to_csv(output_file, index=False)
     print("The results output to {}".format(output_file))
@@ -760,7 +767,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "filename",
         metavar="filename",
-        type=str,
+        type=argparse.FileType("r"),
         help="defining square root for the Quadratic field",
     )
     args = parser.parse_args()
