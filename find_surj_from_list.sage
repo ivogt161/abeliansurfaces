@@ -3,177 +3,41 @@ Given a typical hyperelliptic curve H over the rationals, is_surjective(H) retur
 Galois repsentation might not be surjective. The primes less than 1000 outside of the returned list are verified to be surjective.
 """
 
-def _init_exps():
-    """
-    Return a dictionary with keys l = 3, 5, and 7; for each l, the associated value is the list of characteristic polynomials of the matrices in the exceptional subgroup of GSp(4,l).
-    """
-    #char3 is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,3) (up to conjugation) that isn't ruled out by surj_tests
-    R.<x> = PolynomialRing(Zmod(3))
-    char3 = [x^4 + 2*x^3 + x^2 + 2*x + 1,
-        x^4 + 1,
-        x^4 + x^3 + 2*x^2 + x + 1,
-        x^4 + 2*x^3 + 2*x + 1,
-        x^4 + x^3 + 2*x^2 + 2*x + 1,
-        x^4 + x^3 + x^2 + x + 1,
-        x^4 + x^3 + x^2 + 2*x + 1,
-        x^4 + 2*x^2 + 1,
-        x^4 + x^3 + x + 1,
-        x^4 + 2*x^3 + 2*x^2 + x + 1,
-        x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-        x^4 + x^2 + 1,
-        x^4 + 2*x^3 + x^2 + x + 1]
-    #char5 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,5) (up to conjugation) that isn't ruled out by surj_tests
-    R.<x> = PolynomialRing(Zmod(5))
-    char5 = [x^4 + x^3 + 2*x^2 + x + 1,
-        x^4 + x^3 + 4*x + 1,
-        x^4 + x^3 + x^2 + x + 1,
-        x^4 + x^3 + x + 1,
-        x^4 + 4*x^2 + 1,
-        x^4 + 4*x^3 + 4*x^2 + 4*x + 1,
-        x^4 + 3*x^2 + 1,
-        x^4 + 4*x^3 + 3*x^2 + 4*x + 1,
-        x^4 + 2*x^2 + 1,
-        x^4 + 4*x^3 + 4*x^2 + x + 1,
-        x^4 + 4*x^3 + 2*x^2 + 4*x + 1,
-        x^4 + x^2 + 1,
-        x^4 + 2*x^3 + 4*x^2 + 3*x + 1,
-        x^4 + 4*x^3 + 3*x^2 + x + 1,
-        x^4 + 1,
-        x^4 + 4*x^3 + x^2 + 4*x + 1,
-        x^4 + 2*x^3 + 3*x^2 + 3*x + 1,
-        x^4 + 4*x^3 + 2*x^2 + x + 1,
-        x^4 + 4*x^3 + 4*x + 1,
-        x^4 + 2*x^3 + 2*x^2 + 3*x + 1,
-        x^4 + 4*x^3 + x^2 + x + 1,
-        x^4 + 3*x^3 + 4*x^2 + 3*x + 1,
-        x^4 + 2*x^3 + x^2 + 3*x + 1,
-        x^4 + 4*x^3 + x + 1,
-        x^4 + 3*x^3 + 3*x^2 + 3*x + 1,
-        x^4 + 2*x^3 + 3*x + 1,
-        x^4 + 3*x^3 + 2*x^2 + 3*x + 1,
-        x^4 + 3*x^3 + x^2 + 3*x + 1,
-        x^4 + 3*x^3 + 3*x + 1,
-        x^4 + 2*x^3 + 4*x^2 + 2*x + 1,
-        x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-        x^4 + 2*x^3 + 2*x^2 + 2*x + 1,
-        x^4 + 3*x^3 + 4*x^2 + 2*x + 1,
-        x^4 + 2*x^3 + x^2 + 2*x + 1,
-        x^4 + x^3 + 4*x^2 + 4*x + 1,
-        x^4 + 3*x^3 + 3*x^2 + 2*x + 1,
-        x^4 + 2*x^3 + 2*x + 1,
-        x^4 + x^3 + 3*x^2 + 4*x + 1,
-        x^4 + 3*x^3 + 2*x^2 + 2*x + 1,
-        x^4 + x^3 + 4*x^2 + x + 1,
-        x^4 + 3*x^3 + x^2 + 2*x + 1,
-        x^4 + x^3 + 2*x^2 + 4*x + 1,
-        x^4 + x^3 + 3*x^2 + x + 1,
-        x^4 + x^3 + x^2 + 4*x + 1,
-        x^4 + 3*x^3 + 2*x + 1]
-    #char7 Is the list of characteristic polynomials of matrices in the one subgroup of GSp(4,7) (up to conjugation) that isn't ruled out by surj_tests
-    R.<x> = PolynomialRing(Zmod(7))
-    char7 = [x^4 + 2*x^3 + 5*x^2 + 5*x + 1,
-        x^4 + 5*x^3 + 5*x^2 + 2*x + 1,
-        x^4 + x^3 + 6*x^2 + 2*x + 4,
-        x^4 + x^3 + 3*x^2 + 4*x + 2,
-        x^4 + 5*x^3 + 3*x^2 + 5*x + 1,
-        x^4 + 1,
-        x^4 + 2*x^2 + 1,
-        x^4 + 6*x^2 + 1,
-        x^4 + 4*x^3 + x + 4,
-        x^4 + 4*x^3 + 2*x^2 + x + 4,
-        x^4 + 6*x^3 + x^2 + 6*x + 1,
-        x^4 + 4*x^3 + 5*x^2 + 2*x + 2,
-        x^4 + x^3 + x + 1,
-        x^4 + 3*x^3 + 5*x^2 + 5*x + 2,
-        x^4 + 3*x^3 + 6*x + 4,
-        x^4 + 3*x^3 + 2*x^2 + 6*x + 4,
-        x^4 + 6*x^3 + 3*x^2 + 3*x + 2,
-        x^4 + 2,
-        x^4 + x^3 + 4*x^2 + 6*x + 1,
-        x^4 + 3*x^2 + 4,
-        x^4 + 6*x^2 + 2,
-        x^4 + 5*x^2 + 4,
-        x^4 + 3*x^3 + 6*x^2 + 3*x + 1,
-        x^4 + 6*x^3 + 6*x^2 + 5*x + 4,
-        x^4 + 3*x^3 + 4*x^2 + 4*x + 1,
-        x^4 + 4*x^3 + 4*x^2 + 3*x + 1,
-        x^4 + 4*x^3 + 6*x^2 + 4*x + 1,
-        x^4 + 2*x^3 + x + 2,
-        x^4 + x^3 + 2*x^2 + 3*x + 2,
-        x^4 + 2*x^3 + 4*x^2 + x + 2,
-        x^4 + 6*x^3 + 4*x^2 + x + 1,
-        x^4 + 3*x^3 + x^2 + x + 4,
-        x^4 + 2*x^3 + x^2 + 3*x + 4,
-        x^4 + x^3 + 3*x^2 + 5*x + 4,
-        x^4 + 5*x^2 + 1,
-        x^4 + 2*x^3 + 5*x^2 + 4*x + 4,
-        x^4 + 3*x^3 + 6*x^2 + 2*x + 2,
-        x^4 + 6*x^3 + 6*x + 1,
-        x^4 + 2*x^3 + 2*x^2 + 6*x + 2,
-        x^4 + x^3 + x^2 + x + 1,
-        x^4 + 5*x^3 + 2*x^2 + x + 2,
-        x^4 + 5*x^3 + 5*x^2 + 3*x + 4,
-        x^4 + 4*x^3 + 6*x^2 + 5*x + 2,
-        x^4 + 4*x^3 + x^2 + 6*x + 4,
-        x^4 + 5*x^3 + x^2 + 4*x + 4,
-        x^4 + 2*x^3 + 3*x^2 + 2*x + 1,
-        x^4 + 6*x^3 + 3*x^2 + 2*x + 4,
-        x^4 + x^2 + 2,
-        x^4 + 4,
-        x^4 + 5*x^3 + 6*x + 2,
-        x^4 + 3*x^2 + 2,
-        x^4 + 6*x^3 + 2*x^2 + 4*x + 2,
-        x^4 + 4*x^2 + 4,
-        x^4 + 5*x^3 + 4*x^2 + 6*x + 2]
-    return {3 : char3, 5 : char5, 7 : char7}
 
-# G1920 is Mitchell's exceptional group label. The numbers mean trace^2/similitude,
-#  middle coeff/similitude
-G1920_group_data = [
-(0, -2),
-(0, -1),
-(0, 0),
-(0, 1),
-(0, 2),
-(1, 1),
-(2, 1),
-(2, 2),
-(4, 2),
-(4, 3),
-(8, 4),
-(16, 6)
-]
+"""
+GN_group_data is a list of all possible values of (trace^2/similitude factor, middle coefficient/similitude factor) that occur in an exceptional maximal subgroup of GSp_4(F_ell) of projective order N.  The values N = 1920 and N = 720 occur for ell arbitrarily large, while N = 5040 only occurs for ell = 7.
+"""
+
+G1920_group_data = [(0, -2),(0, -1),(0, 0),(0, 1),(0, 2),(1, 1),(2, 1),(2, 2),(4, 2),(4, 3),(8, 4),(16, 6)]
+
+G720_group_data = [(0, 1), (0, 0), (4, 3), (1, 1), (16, 6), (0, 2), (1, 0), (3, 2), (0, -2)]
+
+G5040_group_data_mod7 = [(0, 0), (0, 1), (0, 2), (0, 5), (0, 6), (1, 0), (1, 1), (2, 6), (3, 2), (4, 3), (5, 3), (6, 3)]
 
 
-# G720 is Mitchell's exceptional group label. The numbers mean trace^2/similitude,
-#  middle coeff/similitude
-G720_group_data = [
-(0, 1), (0, 0), (4, 3), (1, 1), (16, 6), (0, 2), (1, 0), (3, 2), (0, -2)
-]
 
 
 def _init_wit(L):
     """
-    Return a list for witnesses with all entries initially all set to zero, in the following format:
+    Return a list for witnesses with all entries initially all set to zero or 1, in the following format:
         2: [_] <-> [_is_surj_at_2 ]
-        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
-        5: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
-        7: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_small_prime]
-        3: [_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B]
+        ell > 2: [_,_,_,_,_] <-> [witness for _surj_test_A, witness for _surj_test_B, witness for _surj_test_720, witness for _surj_test_1920, witness for _surj_test_5040 ]
+    An entry for one of the exceptional tests (_surj_test_720, _surj_test_1920, _surj_test_5040) is set to 1 if that exceptional subgroup cannot occur for the given value of ell.
     """
     witnesses = {}
     for l in L:
-        # if l == 2:
-        #     witnesses[l] = [0]
-        # elif l in [3,5,7]:
-        #     witnesses[l] = [0,0,0]
-        # else:
-        #     witnesses[l] = [0,0,0,0]
-        # witnesses[l] = [0,0,0,0,0]
-        if l > 7:
-            witnesses[l] = [0,0,0,0]
+        if l == 2:
+             witnesses[l] = [0]
         else:
-            witnesses[l] = [0]
+            witnesses[l] = [0,0,0,0,0]
+            if not l%12 in {5, 7}:
+                witnesses[l][2] = 1
+            if l == 7:
+                witnesses[l][2] = 1
+            if not l%8 in {3, 5}:
+                witnesses[l][3] = 1
+            if l != 7:
+                witnesses[l][4] = 1
     return witnesses
 
 
@@ -228,37 +92,30 @@ def _surj_test_720(l, p, frob_mod):
     return False
 
 
-def _surj_test_small_prime(l, frob_mod, exps):
-    """
-    Return True if frob_mod is the characteristic polynomial of a matrix that is not in the exceptional subgroup mod l
-    """
-    return not frob_mod in exps[l]
+def _surj_test_5040(l, p, frob_mod):
+
+    assert l == 7
+
+    trace_sq_over_sim = frob_mod[3]^2 / p
+    middle_over_sim = frob_mod[2] / p
+
+    if (trace_sq_over_sim, middle_over_sim) not in G5040_group_data_mod7:
+        return True
+    return False
 
 
-def _update_wit(l, p, frob, f, h, exps, wit):
+
+
+def _update_wit(l, p, frob, f, h, wit):
     """
     Return an updated list of witnesses, based on surjectivity tests for frob at p.
     """
     frob_mod = frob.change_ring(Zmod(l))
-    # for i in range(len(wit)):
-    # if wit[i] == 0:
-    #     if l == 2:
-    #         if _is_surj_at_2(f,h):
-    #             wit[i] = 1
-    #         else:
-    #             wit[i] = -1
-    #     elif i == 0 and _surj_test_A(frob_mod):
-    #         wit[i] = p
-    #     elif i == 1 and _surj_test_B(frob_mod):
-    #         wit[i] = p
-    #     elif i == 2 and _surj_test_small_prime(l, p, frob_mod, exps):
-    #         wit[i] = p
-    #     elif i == 3
 
     for i in range(len(wit)):
         if wit[i] == 0:
-            if l > 7:
-                # means wit has size 4
+            if l > 2:
+                # means wit has size 5
                 if i == 0 and _surj_test_A(frob_mod):
                     wit[i] = p
                 elif i == 1 and _surj_test_B(frob_mod):
@@ -267,18 +124,15 @@ def _update_wit(l, p, frob, f, h, exps, wit):
                     wit[i] = p
                 elif i == 3 and _surj_test_1920(l, p, frob_mod):
                     wit[i] = p
+                elif i == 4 and _surj_test_5040(l, p, frob_mod):
+                    wit[i] = p
             else:
                 # wit vector is singleton
-                if l == 2:
-                    assert i == 0
-                    if _is_surj_at_2(f,h):
-                        wit[i] = 1
-                    else:
-                        wit[i] = -1
+                assert i == 0
+                if _is_surj_at_2(f,h):
+                    wit[i] = 1
                 else:
-                    assert l in [3,5,7]
-                    if _surj_test_small_prime(l, frob_mod, exps):
-                        wit[i] = p
+                    wit[i] = -1
 
     return wit
 
@@ -318,7 +172,7 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
     # C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
     C = 2 * prod(genus2reduction(h,f).local_data.keys())
     witnesses = _init_wit(L)
-    exps = _init_exps()
+    #exps = _init_exps()
     to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
     for p in primes(3,bound):
         if C % p != 0:
@@ -327,7 +181,7 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
             to_remove = []
             for l in to_check:
                 if p != l and 0 in witnesses[l]:
-                    witnesses[l] = _update_wit(l, p, frob, f, h, exps, witnesses[l])
+                    witnesses[l] = _update_wit(l, p, frob, f, h, witnesses[l])
                     if not 0 in witnesses[l]:
                         to_remove.append(l)
             for l in to_remove:
