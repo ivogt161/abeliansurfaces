@@ -70,6 +70,7 @@ x = R.gen()
 # should resolve the issue.
 
 PATH_TO_MY_TABLE = "gamma0_wt2_hecke_lpolys_1000.txt"
+HECKE_LPOLY_LIM = 1000  # the limit up to which we have complete lpoly data
 
 #########################################################
 #                            #
@@ -486,13 +487,17 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             ]
         )
     else:  # i.e., can't find data in database
-        warning_msg = ("Warning: couldn't find level {} and prime {} in DB.").format(
-            cusp_form_space, p
-        )
-        raise RuntimeError(warning_msg)
+        if cusp_form_space <= HECKE_LPOLY_LIM:
+            # if we are here, then the reason we couldn't find any forms in the DB is
+            # that there aren't actually any, so we return an empty product of Lpolys
+            hecke_charpoly = 1
+        else:
+            # if we are here, then our lpoly datafile doesn't have enough data
+            warning_msg = ("Warning: couldn't find level {} and prime {} in DB").format(
+                cusp_form_space, p
+            )
+            raise RuntimeError(warning_msg)
 
-        # CuspFormSpaceOnFly = CuspForms(cusp_form_space)
-        # hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
     return hecke_charpoly
 
 
