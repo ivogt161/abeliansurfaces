@@ -132,9 +132,11 @@ M1 = matrix(K, [[a, 0, 0, 0], [0, a, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
 M2 = matrix(K, [[a, 0, 0, 0], [0, 1, 0, 0], [0, 0, a, 0], [0, 0, 0, 1]])
 
 #In the basis of the columns of B3, it is easy to write down the action of the skew perspectivity of order 3, so we change basis from this:
-D3 = matrix(K, [[a, 0, 0, 0], [0, a, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+D3 = matrix(K, [[a*(2*a + 1), 0, 0, 0], [0, a*(2*a + 1), 0, 0], [0, 0, 1*(2*a + 1), 0], [0, 0, 0, 1*(2*a + 1)]])
 B3= matrix(K, [[0, 1, 0, -2], [1, 0, -2, 0], [1, 1, 1, 1], [1, -1, 1, -1]])
-M3 = B3*D3*B3^(-1)
+M3 = matrix(K, [[a, 0, -a-1, a+1], [0, a, -a-1, -a-1], [-a-1, -a-1, -1, 0], [a+1, -a-1, 0, -1]])
+
+assert M3 == B3*D3*B3^(-1)
 
 #This final reflection, which is obtained from the two axes written in Mitchell's paper as checked with the assertion below
 M4 = matrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, -1], [0, 0, 1, 0]])
