@@ -369,29 +369,22 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
     """
 
     if coeff_table is None:
-        raise ValueError("We're not computing forms on the fly ...")
-        # return reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p)
-    else:
+        raise RuntimeError("We're not computing forms on the fly ...")
 
-        slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space)
-                                               & (coeff_table["p"] == p)]
+    slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space)
+                                            & (coeff_table["p"] == p)]
 
-        if slice_of_coeff_table.shape[0] == 1:
-            logger.info("doing pandas stuff for level {}".format(cusp_form_space))
-            hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
-            hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R.0)^i for i in range(len(hecke_charpoly_coeffs))])
-        else:  # i.e., can't find data in database
-            warning_msg = ("Warning: couldn't find level {} and prime {} in DB.\n"
-                           "Assuming no forms here...").format(cusp_form_space, p)
-            logger.info(warning_msg)
+    if slice_of_coeff_table.shape[0] == 1:
+        logger.info("doing pandas stuff for level {}".format(cusp_form_space))
+        hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
+        hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R(x) ** i) for i in range(len(hecke_charpoly_coeffs))])
+    else:  # i.e., can't find data in database
+        warning_msg = ("Warning: couldn't find level {} and prime {} in DB.").format(cusp_form_space, p)
+        raise RuntimeError(warning_msg)
 
-            if cusp_form_space > 1000:
-                # this should not happen
-                raise ValueError("Somehow we're asking for a big cusp form space?")
-            # CuspFormSpaceOnFly = CuspForms(cusp_form_space)
-            # hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
-            hecke_charpoly = 1
-        return hecke_charpoly
+        # CuspFormSpaceOnFly = CuspForms(cusp_form_space)
+        # hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnFly, p)
+    return hecke_charpoly
 
 
 def rule_out_cuspidal_space_using_Frob_p(S,p,fp,M,y,coeff_table=None):
@@ -484,7 +477,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
     p = 1
 
-    while not sufficient_p:
+    while (not sufficient_p) and (p < 100):
             p = next_prime(p)
             if N % p != 0:
                 Cp = C.change_ring(FiniteField(p))
@@ -512,8 +505,10 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
                         if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
                             sufficient_p = True
 
+    if not sufficient_p:
+        # means we haven't found an aux prime p < 100 that passed all the tests
+        raise RuntimeError("Couldn't pass all tests with aux primes < 100")
 
-    #ell_red_easy = [prime_factors(M31), prime_factors(M32A), prime_factors(M32B)]
 
     # we will always include the non-semistable primes.
     non_maximal_primes = set([p[0] for p in list(N.factor())])
@@ -564,12 +559,18 @@ def nonmaximal_wrapper(row, path_to_datafile=None):
     logger.info("Starting curve of label {}".format(row['labels']))
     C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
     conductor_of_C = Integer(row['labels'].split(".")[0])
-    possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
-    possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
-    probably_nonmaximal_primes_verbose = is_surjective(C, L=list(possibly_nonmaximal_primes), verbose=True)
-
-    probably_nonmaximal_primes, final_verbose_column = format_verbose_column(possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose)
-
+    try:
+        possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
+        possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
+        probably_nonmaximal_primes_verbose = is_surjective(C, L=list(possibly_nonmaximal_primes), verbose=True)
+        probably_nonmaximal_primes, final_verbose_column = format_verbose_column(possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose)
+    except RuntimeError as e:
+        logger.warning(f"Curve {row['labels']} failed because: {str(e)}")
+        possibly_nonmaximal_primes = {0}
+        probably_nonmaximal_primes = []
+        final_verbose_column = []
+        else:
+            raise
     return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
 
 
@@ -624,35 +625,50 @@ If you want to run the code on either all of, a subset of, the genus 2 curves
 in the LMFDB, the following will do it. It will output the file in the cwd.
 """
 
-# get_many_results()
+time get_many_results(5)
 
 # """
 # If however you only want to run it on a specific curve, then the following will do
 # """
 
-print("Running one example...")
-f = x^2 + x
-h = x^3 + 1
-C = HyperellipticCurve(R(f),R(h))
-conductor_of_C = 249
-possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
-print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
-                                                     probably_nonmaximal_primes))
+# print("Running one example...")
+# f = x^2 + x
+# h = x^3 + 1
+# C = HyperellipticCurve(R(f),R(h))
+# conductor_of_C = 249
+# possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
+# probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+# print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+#                                                      probably_nonmaximal_primes))
 
 
-print("Running Raymond's examples...")
+# print("Running Raymond's RM examples...")
 
-R.<x> = PolynomialRing(QQ)
-C1 = HyperellipticCurve(R([0, 0, 0, 0, 0, -1]), R([1, 1, 0, 1]))
-C2 = HyperellipticCurve(R([2, 1, 3, 1, 1]), R([0, 1, 1, 1]))
-C3 = HyperellipticCurve(R([2, 1, 1, 2]), R([0, 0, 1, 1]))
+# R.<x> = PolynomialRing(QQ)
+# C1 = HyperellipticCurve(R([0, 0, 0, 0, 0, -1]), R([1, 1, 0, 1]))
+# C2 = HyperellipticCurve(R([2, 1, 3, 1, 1]), R([0, 1, 1, 1]))
+# C3 = HyperellipticCurve(R([2, 1, 1, 2]), R([0, 0, 1, 1]))
 
-curves = [(C1,529), (C2,841), (C3,1225)]
+# curves = [(C1,529)] #, (C2,841), (C3,1225)]
 
-for C,cond_C in curves:
-    print(f"Doing computation for curve of conductor {cond_C}")
-    possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
-    print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
-    probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
-    print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
+# for C,cond_C in curves:
+#     print(f"Doing computation for curve of conductor {cond_C}")
+#     possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
+#     print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
+#     probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+#     print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
+
+
+# print("Running a CM example...")
+
+# R.<x> = PolynomialRing(QQ)
+# C = HyperellipticCurve(R([0, 0, 0, 0, 1, 1]), R([1, 1, 0, 1]))
+
+# curves = [(C,169)]
+
+# for C,cond_C in curves:
+#     print(f"Doing computation for curve of conductor {cond_C}")
+#     possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
+#     print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
+#     probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+#     print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
