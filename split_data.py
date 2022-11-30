@@ -17,9 +17,8 @@ df = pd.DataFrame(zip(labels, data), columns=["labels", "data"])
 B = 200  # how many rows to add to each child datafile
 
 num_files_tracker = 0
-num_files_limit = 10
 
-while (num_files_tracker * B < df.shape[0]) and (num_files_tracker < num_files_limit):
+while num_files_tracker * B < df.shape[0]:
     left_index = int(num_files_tracker * B)
     right_index = int((num_files_tracker + 1) * B)
     this_file_name = f"g2c_curves_{left_index}_{right_index}.csv"
