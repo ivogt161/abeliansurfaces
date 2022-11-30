@@ -84,7 +84,7 @@ def _surj_test_1920(l, p, frob_mod):
 
 def _surj_test_720(l, p, frob_mod):
 
-    assert l%12 in {5, 7} and ell != 7
+    assert l%12 in {5, 7} and l != 7
 
     trace_sq_over_sim = frob_mod[3]^2 / p
     middle_over_sim = frob_mod[2] / p
