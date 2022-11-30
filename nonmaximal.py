@@ -51,7 +51,7 @@ import logging
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
     datefmt="%H:%M:%S",
-    filename="all_curves_072622.log",
+    filename="all_curves_2022_11_30.log",
     level=logging.DEBUG,
 )
 
@@ -455,14 +455,14 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     return R(substitute_poly(a=0, b=x))
 
 
-def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
+def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
     """This should return the left hand side of Equation 3.8.
 
     Args:
         cusp_form_space ([type]): either a space of weight 2 cuspforms with trivial
         Nebentypus or a level (given as an integer)
         p (int): prime number
-	coeff_table: a filename with a list of characteristic polyomials for spaces of modular forms
+        coeff_table: a filename with a list of characteristic polyomials for spaces of modular forms
 
     Returns:
         [pol]: an integer polynomial of twice the dimension of the cuspform
@@ -472,15 +472,23 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table = None):
     if coeff_table is None:
         raise RuntimeError("We're not computing forms on the fly ...")
 
-    slice_of_coeff_table = coeff_table.loc[(coeff_table["N"] == cusp_form_space)
-                                            & (coeff_table["p"] == p)]
+    slice_of_coeff_table = coeff_table.loc[
+        (coeff_table["N"] == cusp_form_space) & (coeff_table["p"] == p)
+    ]
 
     if slice_of_coeff_table.shape[0] == 1:
         logger.info("doing pandas stuff for level {}".format(cusp_form_space))
         hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
-        hecke_charpoly = sum([hecke_charpoly_coeffs[i]*(R(x) ** i) for i in range(len(hecke_charpoly_coeffs))])
+        hecke_charpoly = sum(
+            [
+                hecke_charpoly_coeffs[i] * (R(x) ** i)
+                for i in range(len(hecke_charpoly_coeffs))
+            ]
+        )
     else:  # i.e., can't find data in database
-        warning_msg = ("Warning: couldn't find level {} and prime {} in DB.").format(cusp_form_space, p)
+        warning_msg = ("Warning: couldn't find level {} and prime {} in DB.").format(
+            cusp_form_space, p
+        )
         raise RuntimeError(warning_msg)
 
         # CuspFormSpaceOnFly = CuspForms(cusp_form_space)
@@ -665,21 +673,26 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
 def nonmaximal_wrapper(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
-    logger.info("Starting curve of label {}".format(row['labels']))
-    C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
-    conductor_of_C = Integer(row['labels'].split(".")[0])
+    logger.info("Starting curve of label {}".format(row["labels"]))
+    C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
+    conductor_of_C = Integer(row["labels"].split(".")[0])
     try:
-        possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
+        possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(
+            C, N=conductor_of_C, path_to_datafile=path_to_datafile
+        )
         possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
-        probably_nonmaximal_primes_verbose = is_surjective(C, L=list(possibly_nonmaximal_primes), verbose=True)
-        probably_nonmaximal_primes, final_verbose_column = format_verbose_column(possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose)
+        probably_nonmaximal_primes_verbose = is_surjective(
+            C, L=list(possibly_nonmaximal_primes), verbose=True
+        )
+        probably_nonmaximal_primes, final_verbose_column = format_verbose_column(
+            possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
+        )
     except RuntimeError as e:
         logger.warning(f"Curve {row['labels']} failed because: {str(e)}")
         possibly_nonmaximal_primes = {0}
         probably_nonmaximal_primes = []
         final_verbose_column = []
-        else:
-            raise
+
     return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
 
 

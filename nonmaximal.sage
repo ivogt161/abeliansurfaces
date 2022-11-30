@@ -569,8 +569,7 @@ def nonmaximal_wrapper(row, path_to_datafile=None):
         possibly_nonmaximal_primes = {0}
         probably_nonmaximal_primes = []
         final_verbose_column = []
-        else:
-            raise
+
     return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
 
 
