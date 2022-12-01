@@ -465,7 +465,6 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
     ]
 
     if slice_of_coeff_table.shape[0] == 1:
-        logger.info("doing pandas stuff for level {}".format(cusp_form_space))
         hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
         if hecke_charpoly_coeffs:
             hecke_charpoly = sum(
