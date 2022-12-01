@@ -684,7 +684,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     return non_maximal_primes_verbose
 
 
-def nonmaximal_wrapper(row, path_to_datafile=None):
+def nonmaximal_wrapper_old(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
     logger.info("Starting curve of label {}".format(row["labels"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
@@ -709,7 +709,32 @@ def nonmaximal_wrapper(row, path_to_datafile=None):
     return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
 
 
-def get_many_results(filename, subset=None):
+def nonmaximal_wrapper_big(row, path_to_datafile=None):
+    """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
+    logger.info("Starting curve of cond.disc {}.{}".format(row["cond"]), row["disc"])
+    C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
+    conductor_of_C = Integer(row["labels"].split(".")[0])
+    try:
+        possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(
+            C, N=conductor_of_C, path_to_datafile=path_to_datafile
+        )
+        possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
+        probably_nonmaximal_primes_verbose = is_surjective(
+            C, L=list(possibly_nonmaximal_primes), verbose=True
+        )
+        probably_nonmaximal_primes, final_verbose_column = format_verbose_column(
+            possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
+        )
+    except RuntimeError as e:
+        logger.warning(f"Curve {row['cond']}.{row['disc']} failed because: {str(e)}")
+        possibly_nonmaximal_primes = {0}
+        probably_nonmaximal_primes = []
+        final_verbose_column = []
+
+    return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
+
+
+def get_many_results(filename, scheme, subset=None):
     """Main calling function. Outputs a csv file of the results.
 
     Args:
@@ -747,22 +772,41 @@ def get_many_results(filename, subset=None):
             )
         )
 
-    # The following line runs the above code on all curves in the dataframe
-    df[
-        ["possibly_nonmaximal_primes", "probably_nonmaximal_primes", "verbose_output"]
-    ] = df.apply(
-        nonmaximal_wrapper,
-        axis=int(1),
-        path_to_datafile=PATH_TO_MY_TABLE,
-        result_type="expand",
-    )
+    # The following block runs the above code on all curves in the dataframe
+    if scheme == "old":
+        df[
+            [
+                "possibly_nonmaximal_primes",
+                "probably_nonmaximal_primes",
+                "verbose_output",
+            ]
+        ] = df.apply(
+            nonmaximal_wrapper_old,
+            axis=int(1),
+            path_to_datafile=PATH_TO_MY_TABLE,
+            result_type="expand",
+        )
 
-    # It may be useful to know the primes where the Jacobian has rational torsion.
-    # This has been computed in Magma elsewhere. Since not everyone has access to
-    # Magma, this data has been saved in the file 'torsion_primes.csv'.
+        # It may be useful to know the primes where the Jacobian has rational torsion.
+        # This has been computed in Magma elsewhere. Since not everyone has access to
+        # Magma, this data has been saved in the file 'torsion_primes.csv'.
 
-    df_torsion = pd.read_csv("torsion_primes.csv")
-    df = pd.merge(df, df_torsion, how="left", on="labels")
+        df_torsion = pd.read_csv("torsion_primes.csv")
+        df = pd.merge(df, df_torsion, how="left", on="labels")
+
+    else:
+        df[
+            [
+                "possibly_nonmaximal_primes",
+                "probably_nonmaximal_primes",
+                "verbose_output",
+            ]
+        ] = df.apply(
+            nonmaximal_wrapper_big,
+            axis=int(1),
+            path_to_datafile=PATH_TO_MY_TABLE,
+            result_type="expand",
+        )
 
     df.rename(columns={"data": "polynomials"}, inplace=True)
 
@@ -775,6 +819,10 @@ def get_many_results(filename, subset=None):
     logger.info("The results output to {}".format(output_file))
 
 
+def cli_handler(args):
+    get_many_results(args.filename, args.scheme)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -783,5 +831,12 @@ if __name__ == "__main__":
         type=argparse.FileType("r"),
         help="filename on which to execute the code",
     )
+    parser.add_argument(
+        "--scheme",
+        type=str,
+        required=True,
+        choices=["old", "big"],
+        help="whether running on small (legacy) dataset or the new one",
+    )
     args = parser.parse_args()
-    get_many_results(args.filename)
+    cli_handler(args)

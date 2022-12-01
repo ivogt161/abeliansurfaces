@@ -14,8 +14,8 @@ df = pd.read_csv(
     path_to_datafile,
     sep=":",
     header=None,
-    names=["disc", "cond", "hash", "poly_data", "rank", "lpolys", "stgroup"],
-    usecols=["disc", "cond", "poly_data", "stgroup"],
+    names=["disc", "cond", "hash", "data", "rank", "lpolys", "stgroup"],
+    usecols=["disc", "cond", "data", "stgroup"],
 )
 df_generic = df.loc[df["stgroup"] == "USp(4)"].copy()
 df_generic.sort_values(by=["cond"], inplace=True)
@@ -31,6 +31,6 @@ while num_files_tracker * B < df.shape[0]:
     this_file_name = f"g2c_curves_{left_index}_{right_index}.csv"
     this_file_name = OUTPUT_DIR / this_file_name
     df.iloc[left_index:right_index].to_csv(
-        this_file_name, index=False, columns=["cond", "disc", "poly_data"]
+        this_file_name, index=False, columns=["cond", "disc", "data"]
     )
     num_files_tracker += 1
