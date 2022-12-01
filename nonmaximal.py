@@ -392,14 +392,7 @@ def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
 
 def special_divisors(N):
     D0 = [d for d in divisors(N) if d <= sqrt(N)]
-    D0.reverse()
-    D = []
-    for d0 in D0:
-        if all([d % d0 != 0 for d in D]):
-            D.append(d0)
-
-    D.reverse()
-    return D
+    return D0
 
 
 def get_cuspidal_levels(N, max_cond_exp_2=None):
@@ -432,12 +425,6 @@ def set_up_cuspidal_spaces(N, path_to_datafile=None, max_cond_exp_2=None):
     D = get_cuspidal_levels(N, max_cond_exp_2)
     if path_to_datafile is not None:
         levels_of_interest = [(d, 0, 0) for d in D]
-
-        # There are no modular forms of level < 11
-        bad_levels = [(i, 0, 0) for i, _, _ in levels_of_interest if i < 11]
-
-        levels_of_interest = [z for z in levels_of_interest if z not in bad_levels]
-
         DB = create_polynomial_database(path_to_datafile, levels_of_interest)
         return levels_of_interest, DB
     else:
@@ -480,17 +467,30 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
     if slice_of_coeff_table.shape[0] == 1:
         logger.info("doing pandas stuff for level {}".format(cusp_form_space))
         hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
-        hecke_charpoly = sum(
-            [
-                hecke_charpoly_coeffs[i] * (R(x) ** i)
-                for i in range(len(hecke_charpoly_coeffs))
-            ]
-        )
+        if hecke_charpoly_coeffs:
+            hecke_charpoly = sum(
+                [
+                    hecke_charpoly_coeffs[i] * (R(x) ** i)
+                    for i in range(len(hecke_charpoly_coeffs))
+                ]
+            )
+        else:
+            # missing data in dat file
+            logger.warning(
+                f"On the fly cusp form computation for level {cusp_form_space}"
+            )
+            CuspFormSpaceOnfly = CuspForms(cusp_form_space)
+            hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(
+                CuspFormSpaceOnfly, p
+            )
     else:  # i.e., can't find data in database
         if cusp_form_space <= HECKE_LPOLY_LIM:
             # if we are here, then the reason we couldn't find any forms in the DB is
             # that there aren't actually any, so we return an empty product of Lpolys
             hecke_charpoly = 1
+            logger.debug(
+                f"I am settiong hecke charpoly to 1 for level {cusp_form_space} and prime {p}"
+            )
         else:
             # if we are here, then our lpoly datafile doesn't have enough data
             warning_msg = ("Warning: couldn't find level {} and prime {} in DB").format(
@@ -511,13 +511,16 @@ def rule_out_cuspidal_space_using_Frob_p(S, p, fp, M, y, coeff_table=None):
 
 
 def rule_out_cuspidal_spaces_using_Frob_p(p, fp, MC, coeff_table=None):
-    MC0 = []
-    for S, M, y in MC:
-        Mm, yy = rule_out_cuspidal_space_using_Frob_p(
-            S, p, fp, M, y, coeff_table=coeff_table
-        )
-        MC0.append((S, Mm, yy))
-    return MC0
+    if p < 100:
+        MC0 = []
+        for S, M, y in MC:
+            Mm, yy = rule_out_cuspidal_space_using_Frob_p(
+                S, p, fp, M, y, coeff_table=coeff_table
+            )
+            MC0.append((S, Mm, yy))
+        return MC0
+    else:
+        return MC
 
 
 #########################################################
@@ -597,7 +600,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
     p = 1
 
-    while (not sufficient_p) and (p < 100):
+    while not sufficient_p:
         p = next_prime(p)
         if N % p != 0:
             Cp = C.change_ring(FiniteField(p))
@@ -625,8 +628,14 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
         if (M1p3 == 1) or (y1p3 > 1):
             if (M2p2nsd == 1) or (y2p2nsd > 1):
-                if all((Mc == 1 or yc > 1) for S, Mc, yc in MCusp):
-                    if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
+                if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
+                    if (all((Mc == 1 or yc > 1) for S, Mc, yc in MCusp)) or (p > 100):
+                        if p > 100 and not (
+                            all((Mc == 1 or yc > 1) for S, Mc, yc in MCusp)
+                        ):
+                            warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}"
+                            logger.warning(warning_msg)
+                            print(warning_msg)
                         sufficient_p = True
 
     if not sufficient_p:

@@ -296,12 +296,6 @@ def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
 
 def special_divisors(N):
     D0 = [d for d in divisors(N) if d <= sqrt(N)]
-    # D0.reverse()
-    # D = []
-    # for d0 in D0:
-    #         if all([d % d0 != 0 for d in D]):
-    #                 D.append(d0)
-    # D.reverse()
     return D0
 
 
@@ -331,12 +325,6 @@ def set_up_cuspidal_spaces(N, path_to_datafile=None, max_cond_exp_2=None):
     D = get_cuspidal_levels(N, max_cond_exp_2)
     if path_to_datafile is not None:
         levels_of_interest = [(d,0,0) for d in D]
-
-        # There are no modular forms of level < 11
-        bad_levels = [(i,0,0) for (i,0,0) in levels_of_interest if i in range(11)]
-
-        levels_of_interest = [z for z in levels_of_interest if z not in bad_levels]
-
         DB = create_polynomial_database(path_to_datafile, levels_of_interest)
         return levels_of_interest, DB
     else:
@@ -387,19 +375,15 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             )
         else:
             # missing data in dat file
+            logger.warning(f"On the fly cusp form computation for level {cusp_form_space}")
             CuspFormSpaceOnfly = CuspForms(cusp_form_space)
-            print(f"I am doing on the fly stuff for level {cusp_form_space} and prime {p}")
             hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnfly, p)
-            print(f"my on the fly poly is {hecke_charpoly}")
     else:  # i.e., can't find data in database
         if cusp_form_space <= HECKE_LPOLY_LIM:
             # if we are here, then the reason we couldn't find any forms in the DB is
             # that there aren't actually any, so we return an empty product of Lpolys
-            # hecke_charpoly = 1
-            CuspFormSpaceOnfly = CuspForms(cusp_form_space)
-            print(f"I am doing on the fly stuff for level {cusp_form_space} and prime {p}")
-            hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnfly, p)
-            print(f"my on the fly poly is {hecke_charpoly}")
+            hecke_charpoly = 1
+            print(f"I am settiong hecke charpoly to 1 for level {cusp_form_space} and prime {p}")
         else:
             # if we are here, then our lpoly datafile doesn't have enough data
             warning_msg = ("Warning: couldn't find level {} and prime {} in DB").format(
@@ -504,35 +488,36 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     p = 1
 
     while (not sufficient_p):
-            p = next_prime(p)
-            if N % p != 0:
-                Cp = C.change_ring(FiniteField(p))
-                fp = Cp.frobenius_polynomial()
-                fp_rev = Cp.zeta_function().numerator()
+        p = next_prime(p)
+        if N % p != 0:
+            Cp = C.change_ring(FiniteField(p))
+            fp = Cp.frobenius_polynomial()
+            fp_rev = Cp.zeta_function().numerator()
 
-                #M31 = rule_out_one_dim_ell(p,fp,d,M31);
-                #M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
-                #M32B = rule_out_related_two_dim_ell_case2(p,fp,d,M32B)
+            #M31 = rule_out_one_dim_ell(p,fp,d,M31);
+            #M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
+            #M32B = rule_out_related_two_dim_ell_case2(p,fp,d,M32B)
 
-                f = Integers(d)(p).multiplicative_order()
-                c = gcd(f, 120)
-                c = lcm(c, 8)  # adding in the max power of 2
-                tp = - fp.coefficients(sparse=false)[3]
-                sp = fp.coefficients(sparse=false)[2]
+            f = Integers(d)(p).multiplicative_order()
+            c = gcd(f, 120)
+            c = lcm(c, 8)  # adding in the max power of 2
+            tp = - fp.coefficients(sparse=false)[3]
+            sp = fp.coefficients(sparse=false)[2]
 
-                M1p3, y1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3, y1p3)
-                M2p2nsd, y2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd, y2p2nsd)
-                MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp,coeff_table=DB)
-                MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
+            M1p3, y1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3, y1p3)
+            M2p2nsd, y2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd, y2p2nsd)
+            MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp,coeff_table=DB)
+            MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
-            if (M1p3 == 1) or (y1p3 > 1):
-                if (M2p2nsd == 1) or (y2p2nsd > 1):
-                    if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
-                        if (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)) or (p > 100):
-                            if p > 100 and not (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)):
-                                warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}" 
-                                print(warning_msg)
-                            sufficient_p = True
+        if (M1p3 == 1) or (y1p3 > 1):
+            if (M2p2nsd == 1) or (y2p2nsd > 1):
+                if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
+                    if (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)) or (p > 100):
+                        if p > 100 and not (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)):
+                            warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}" 
+                            logger.warning(warning_msg)
+                            print(warning_msg)
+                        sufficient_p = True
 
 
     if not sufficient_p:
@@ -540,7 +525,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
         raise RuntimeError("Couldn't pass all tests with aux primes < 100")
 
 
-    # we will always include the non-semistable primes.
+    # we will always include the bad primes.
     non_maximal_primes = set([p[0] for p in list(N.factor())])
 
     non_maximal_primes_verbose = dict.fromkeys(non_maximal_primes, 'nss')
