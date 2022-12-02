@@ -702,7 +702,7 @@ def nonmaximal_wrapper_old(row, path_to_datafile=None):
 
 def nonmaximal_wrapper_big(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
-    logging.info("Starting curve of cond.disc {}.{}".format(row["cond"]), row["disc"])
+    logging.info("Starting curve of cond.disc {}.{}".format(row["cond"], row["disc"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
     conductor_of_C = Integer(row["labels"].split(".")[0])
     try:
