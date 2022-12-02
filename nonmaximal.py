@@ -69,8 +69,8 @@ x = R.gen()
 # this file into sage. If there's any problem, making the following path absolute
 # should resolve the issue.
 
-PATH_TO_MY_TABLE = "gamma0_wt2_hecke_lpolys_1000.txt"
-HECKE_LPOLY_LIM = 1000  # the limit up to which we have complete lpoly data
+PATH_TO_MY_TABLE = "gamma0_wt2_hecke_lpolys_new.txt"
+HECKE_LPOLY_LIM = 1025  # the limit up to which we have complete lpoly data
 
 #########################################################
 #                            #
@@ -488,7 +488,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             # that there aren't actually any, so we return an empty product of Lpolys
             hecke_charpoly = 1
             logger.debug(
-                f"I am settiong hecke charpoly to 1 for level {cusp_form_space} and prime {p}"
+                f"Setting hecke charpoly to 1 for level {cusp_form_space} and prime {p}"
             )
         else:
             # if we are here, then our lpoly datafile doesn't have enough data
@@ -820,6 +820,13 @@ def get_many_results(filename, scheme, subset=None):
 
 
 def cli_handler(args):
+    loglevel = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)s: %(message)s",
+        datefmt="%H:%M:%S",
+        filename=args.logfile,
+        level=loglevel,
+    )
     get_many_results(args.filename, args.scheme)
 
 
@@ -838,5 +845,12 @@ if __name__ == "__main__":
         choices=["old", "big"],
         help="whether running on small (legacy) dataset or the new one",
     )
+    parser.add_argument(
+        "--logfile",
+        type=str,
+        required=True,
+        help="the file to which logs get output",
+    )
+    parser.add_argument("--verbose", action="store_true", help="get more info printed")
     args = parser.parse_args()
     cli_handler(args)
