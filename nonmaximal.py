@@ -48,15 +48,6 @@ import pandas as pd
 import pathlib
 import logging
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%H:%M:%S",
-    filename="all_curves_2022_11_30.log",
-    level=logging.DEBUG,
-)
-
-logger = logging.getLogger(__name__)
-
 OUTPUT_DIR = pathlib.Path(__file__).parent.absolute() / "output"
 
 # Globals
@@ -475,7 +466,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             )
         else:
             # missing data in dat file
-            logger.warning(
+            logging.warning(
                 f"On the fly cusp form computation for level {cusp_form_space}"
             )
             CuspFormSpaceOnfly = CuspForms(cusp_form_space)
@@ -487,7 +478,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             # if we are here, then the reason we couldn't find any forms in the DB is
             # that there aren't actually any, so we return an empty product of Lpolys
             hecke_charpoly = 1
-            logger.debug(
+            logging.debug(
                 f"Setting hecke charpoly to 1 for level {cusp_form_space} and prime {p}"
             )
         else:
@@ -633,7 +624,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
                             all((Mc == 1 or yc > 1) for S, Mc, yc in MCusp)
                         ):
                             warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}"
-                            logger.warning(warning_msg)
+                            logging.warning(warning_msg)
                             print(warning_msg)
                         sufficient_p = True
 
@@ -686,7 +677,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
 def nonmaximal_wrapper_old(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
-    logger.info("Starting curve of label {}".format(row["labels"]))
+    logging.info("Starting curve of label {}".format(row["labels"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
     conductor_of_C = Integer(row["labels"].split(".")[0])
     try:
@@ -701,7 +692,7 @@ def nonmaximal_wrapper_old(row, path_to_datafile=None):
             possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
         )
     except RuntimeError as e:
-        logger.warning(f"Curve {row['labels']} failed because: {str(e)}")
+        logging.warning(f"Curve {row['labels']} failed because: {str(e)}")
         possibly_nonmaximal_primes = {0}
         probably_nonmaximal_primes = []
         final_verbose_column = []
@@ -711,7 +702,7 @@ def nonmaximal_wrapper_old(row, path_to_datafile=None):
 
 def nonmaximal_wrapper_big(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
-    logger.info("Starting curve of cond.disc {}.{}".format(row["cond"]), row["disc"])
+    logging.info("Starting curve of cond.disc {}.{}".format(row["cond"]), row["disc"])
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
     conductor_of_C = Integer(row["labels"].split(".")[0])
     try:
@@ -726,7 +717,7 @@ def nonmaximal_wrapper_big(row, path_to_datafile=None):
             possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
         )
     except RuntimeError as e:
-        logger.warning(f"Curve {row['cond']}.{row['disc']} failed because: {str(e)}")
+        logging.warning(f"Curve {row['cond']}.{row['disc']} failed because: {str(e)}")
         possibly_nonmaximal_primes = {0}
         probably_nonmaximal_primes = []
         final_verbose_column = []
@@ -755,7 +746,7 @@ def get_many_results(filename, scheme, subset=None):
                 subset, subset * 3
             )
         )
-        logger.info(
+        logging.info(
             "Running on the first {} LMFDB genus 2 curves which are absolutely simple...(will take about {} seconds)...".format(
                 subset, subset * 3
             )
@@ -766,7 +757,7 @@ def get_many_results(filename, scheme, subset=None):
                 subset
             )
         )
-        logger.info(
+        logging.info(
             "Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(
                 subset
             )
@@ -816,7 +807,7 @@ def get_many_results(filename, scheme, subset=None):
     output_file = OUTPUT_DIR / output_file
     df.to_csv(output_file, index=False)
     print("The results output to {}".format(output_file))
-    logger.info("The results output to {}".format(output_file))
+    logging.info("The results output to {}".format(output_file))
 
 
 def cli_handler(args):
