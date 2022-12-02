@@ -24,13 +24,14 @@ B = 200  # how many rows to add to each child datafile
 
 
 num_files_tracker = 0
+file_limit = 3
 
-while num_files_tracker * B < df.shape[0]:
+while (num_files_tracker * B < df.shape[0]) and (num_files_tracker < file_limit):
     left_index = int(num_files_tracker * B)
     right_index = int((num_files_tracker + 1) * B)
     this_file_name = f"g2c_curves_{left_index}_{right_index}.csv"
     this_file_name = OUTPUT_DIR / this_file_name
-    df.iloc[left_index:right_index].to_csv(
+    df_generic.iloc[left_index:right_index].to_csv(
         this_file_name, index=False, columns=["cond", "disc", "data"]
     )
     num_files_tracker += 1

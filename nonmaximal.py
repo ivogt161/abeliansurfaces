@@ -593,6 +593,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     while not sufficient_p:
         p = next_prime(p)
         if N % p != 0:
+            logging.debug(f"Doing part 1 for p = {p}")
             Cp = C.change_ring(FiniteField(p))
             fp = Cp.frobenius_polynomial()
             fp_rev = Cp.zeta_function().numerator()
@@ -704,7 +705,7 @@ def nonmaximal_wrapper_big(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
     logging.info("Starting curve of cond.disc {}.{}".format(row["cond"], row["disc"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
-    conductor_of_C = Integer(row["labels"].split(".")[0])
+    conductor_of_C = Integer(row["cond"])
     try:
         possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(
             C, N=conductor_of_C, path_to_datafile=path_to_datafile
