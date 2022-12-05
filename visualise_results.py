@@ -52,10 +52,10 @@ import pathlib
 
 # Globals
 
-RESULTS_PATH = 'g2c_results.csv'
-PRIME_TYPES = ['1p3', '2p2', 'cusp', 'irred', '?', 'nss']
+RESULTS_PATH = "combined.csv"
+PRIME_TYPES = ["1p3", "2p2", "cusp", "irred", "?", "nss"]
 WITNESS_TYPES = ["A", "B", "exp"]
-RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "results"
+RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "results_dec_2022"
 # The following requires write permission to the abeliansurfaces folder
 pathlib.Path(RESULTS_DIR).mkdir(parents=True, exist_ok=True)
 
@@ -64,18 +64,21 @@ def get_type_scores(verbose_output_str):
     """Computes the type score counter for each curve"""
     verbose_output_list = ast.literal_eval(verbose_output_str)
 
-    type_score_dict = {k:{prime_type:0 for prime_type in PRIME_TYPES} for k in nonmaximal_prime_dist['prime']}
+    type_score_dict = {
+        k: {prime_type: 0 for prime_type in PRIME_TYPES}
+        for k in nonmaximal_prime_dist["prime"]
+    }
 
     for a_verbose_str in verbose_output_list:
-        prime_and_types, _ = a_verbose_str.split(':')
-        prime, types_info = prime_and_types.split('.',1)
+        prime_and_types, _ = a_verbose_str.split(":")
+        prime, types_info = prime_and_types.split(".", 1)
         prime = int(prime)
-        types_info_split = types_info.split('.')
+        types_info_split = types_info.split(".")
         num_different_types = len(types_info_split)
         for the_type in types_info_split:
-            type_score_dict[prime][the_type] += 1/num_different_types
+            type_score_dict[prime][the_type] += 1 / num_different_types
 
-    type_score_counter = {k:Counter(v) for k,v in type_score_dict.items() }
+    type_score_counter = {k: Counter(v) for k, v in type_score_dict.items()}
 
     return type_score_counter
 
@@ -84,14 +87,18 @@ def get_witness_scores(verbose_output_str):
     """Computes the witness score counter for each curve"""
     verbose_output_list = ast.literal_eval(verbose_output_str)
 
-    witness_score_dict = {k:{wit_type:0 for wit_type in WITNESS_TYPES} for k in nonmaximal_prime_dist['prime'] if k != 2}
+    witness_score_dict = {
+        k: {wit_type: 0 for wit_type in WITNESS_TYPES}
+        for k in nonmaximal_prime_dist["prime"]
+        if k != 2
+    }
 
     for a_verbose_str in verbose_output_list:
-        prime = int(a_verbose_str.split('.',1)[0])
-        wit_array = ast.literal_eval(a_verbose_str.split('=')[1])
+        prime = int(a_verbose_str.split(".", 1)[0])
+        wit_array = ast.literal_eval(a_verbose_str.split("=")[1])
         if prime != 2:
             how_many_zeros = wit_array.count(0)
-            wit_score_array = [(1/how_many_zeros)*int(k==0) for k in wit_array]
+            wit_score_array = [(1 / how_many_zeros) * int(k == 0) for k in wit_array]
             if len(wit_array) == 3:
                 witness_score_dict[prime]["A"] += wit_score_array[0]
                 witness_score_dict[prime]["B"] += wit_score_array[1]
@@ -100,7 +107,7 @@ def get_witness_scores(verbose_output_str):
                 witness_score_dict[prime]["A"] += wit_score_array[0]
                 witness_score_dict[prime]["B"] += wit_score_array[1]
 
-    witness_score_counter = {k:Counter(v) for k,v in witness_score_dict.items()}
+    witness_score_counter = {k: Counter(v) for k, v in witness_score_dict.items()}
 
     return witness_score_counter
 
@@ -109,9 +116,13 @@ def autolabel(ax, rects):
     """Attach a text label above each bar displaying its height"""
     for rect in rects:
         height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width()/2., height * 1.01,
-                '%d' % int(height),
-                ha='center', va='bottom')
+        ax.text(
+            rect.get_x() + rect.get_width() / 2.0,
+            height * 1.01,
+            "%d" % int(height),
+            ha="center",
+            va="bottom",
+        )
 
 
 def autolabel_stacked(ax, rects):
@@ -123,26 +134,40 @@ def autolabel_stacked(ax, rects):
     # now for each x_val, find rectangles with that x_val, get combined height,
     # and label with it
     for x_val in possible_x_values:
-        heights_of_rects_with_this_x_val = [rect.get_height() for rect in rects if rect.get_x() == x_val]
+        heights_of_rects_with_this_x_val = [
+            rect.get_height() for rect in rects if rect.get_x() == x_val
+        ]
         combined_height = sum(heights_of_rects_with_this_x_val)
-        ax.text(x_val + a_width/2., combined_height * 1.01,
-                '%d' % int(round(combined_height)),
-                ha='center', va='bottom')
+        ax.text(
+            x_val + a_width / 2.0,
+            combined_height * 1.01,
+            "%d" % int(round(combined_height)),
+            ha="center",
+            va="bottom",
+        )
 
 
 def plot_hist_prime_count(df):
     """Plot how many curves had how many nonmaximal primes"""
-    min_number_nonmax_primes = df['number_of_nonmaximal_primes'].min()
-    max_number_nonmax_primes = df['number_of_nonmaximal_primes'].max()
-    bins = [i - 0.5 for i in range(min_number_nonmax_primes, max_number_nonmax_primes + 2)]
+    min_number_nonmax_primes = df["number_of_nonmaximal_primes"].min()
+    max_number_nonmax_primes = df["number_of_nonmaximal_primes"].max()
+    bins = [
+        i - 0.5 for i in range(min_number_nonmax_primes, max_number_nonmax_primes + 2)
+    ]
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlabel("Number of nonmaximal primes")
     ax.set_ylabel("Number of curves")
     ax.set_title("How many curves had how many nonmaximal primes?")
     ax.set_xticks(range(min_number_nonmax_primes, max_number_nonmax_primes + 1))
-    _,_,patches = ax.hist(df['number_of_nonmaximal_primes'], bins=bins, color='#17becf', edgecolor='red', lw=3.)
+    _, _, patches = ax.hist(
+        df["number_of_nonmaximal_primes"],
+        bins=bins,
+        color="#17becf",
+        edgecolor="red",
+        lw=3.0,
+    )
     autolabel(ax, patches)
-    plt.savefig(RESULTS_DIR / 'hist_nonmaximal_prime_count.jpg', dpi=400)
+    plt.savefig(RESULTS_DIR / "hist_nonmaximal_prime_count.jpg", dpi=400)
     plt.show()
 
 
@@ -154,16 +179,30 @@ def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None
     ax.set_title("How many curves were nonmaximal at each prime?")
 
     if primes_to_exclude:
-        nonmaximal_prime_dist = nonmaximal_prime_dist.loc[~nonmaximal_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
+        nonmaximal_prime_dist = (
+            nonmaximal_prime_dist.loc[
+                ~nonmaximal_prime_dist.prime.isin(primes_to_exclude)
+            ]
+            .reset_index(drop=True)
+            .copy()
+        )
 
-    ax.set_xticks(nonmaximal_prime_dist['prime'])
-    rects = ax.bar(x=nonmaximal_prime_dist['prime'], height=nonmaximal_prime_dist['f'], color='#17becf', edgecolor='red', lw=3.)
+    ax.set_xticks(nonmaximal_prime_dist["prime"])
+    rects = ax.bar(
+        x=nonmaximal_prime_dist["prime"],
+        height=nonmaximal_prime_dist["f"],
+        color="#17becf",
+        edgecolor="red",
+        lw=3.0,
+    )
     autolabel(ax, rects)
-    plt.savefig(RESULTS_DIR / 'bar_nonmaximal_prime_dist.jpg', dpi=400)
+    plt.savefig(RESULTS_DIR / "bar_nonmaximal_prime_dist.jpg", dpi=400)
     plt.show()
 
 
-def plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=None):
+def plot_bar_stacked_nonmaximal_prime_dist_torsion(
+    nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=None
+):
     """
     Plot how many curves were nonmaximal at each prime, showing which of them
     are nonmaximal only because its a torsion prime
@@ -174,15 +213,37 @@ def plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsio
     ax.set_title("How many curves were nonmaximal at each prime due to torsion?")
 
     if primes_to_exclude:
-        nonmaximal_prime_dist = nonmaximal_prime_dist.loc[~nonmaximal_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
-        torsion_prime_dist = torsion_prime_dist.loc[~torsion_prime_dist.prime.isin(primes_to_exclude)].reset_index(drop=True).copy()
+        nonmaximal_prime_dist = (
+            nonmaximal_prime_dist.loc[
+                ~nonmaximal_prime_dist.prime.isin(primes_to_exclude)
+            ]
+            .reset_index(drop=True)
+            .copy()
+        )
+        torsion_prime_dist = (
+            torsion_prime_dist.loc[~torsion_prime_dist.prime.isin(primes_to_exclude)]
+            .reset_index(drop=True)
+            .copy()
+        )
 
-    ax.set_xticks(nonmaximal_prime_dist['prime'])
-    rects = ax.bar(x=nonmaximal_prime_dist['prime'], height=nonmaximal_prime_dist['f'], color='#17becf', edgecolor='red', lw=3.)
-    rects_torsion = ax.bar(x=torsion_prime_dist['prime'], height=torsion_prime_dist['f'], color='green', edgecolor='red', lw=3.)
+    ax.set_xticks(nonmaximal_prime_dist["prime"])
+    rects = ax.bar(
+        x=nonmaximal_prime_dist["prime"],
+        height=nonmaximal_prime_dist["f"],
+        color="#17becf",
+        edgecolor="red",
+        lw=3.0,
+    )
+    rects_torsion = ax.bar(
+        x=torsion_prime_dist["prime"],
+        height=torsion_prime_dist["f"],
+        color="green",
+        edgecolor="red",
+        lw=3.0,
+    )
     autolabel(ax, rects)
-    ax.legend((rects[0], rects_torsion[0]), ('non torsion', 'torsion'))
-    plt.savefig(RESULTS_DIR / 'bar_stacked_nonmaximal_prime_dist_torsion.jpg', dpi=400)
+    ax.legend((rects[0], rects_torsion[0]), ("non torsion", "torsion"))
+    plt.savefig(RESULTS_DIR / "bar_stacked_nonmaximal_prime_dist_torsion.jpg", dpi=400)
     plt.show()
 
 
@@ -195,10 +256,10 @@ def plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df):
     ax.set_xlabel("Prime")
     ax.set_ylabel("Number of curves")
     ax.set_title("Which nonmaximal prime types did we see?")
-    ax.set_xticks(nonmaximal_prime_dist['prime'])
+    ax.set_xticks(nonmaximal_prime_dist["prime"])
     rects = stacked_df.plot.bar(stacked=True, ax=ax)
     autolabel_stacked(ax, rects.patches)
-    plt.savefig(RESULTS_DIR / 'bar_stacked_nonmaximal_prime_dist_types.jpg', dpi=400)
+    plt.savefig(RESULTS_DIR / "bar_stacked_nonmaximal_prime_dist_types.jpg", dpi=400)
     plt.show()
 
 
@@ -206,16 +267,16 @@ def plot_bar_stacked_witnesses(witness_stacked_df):
     """Plot showing which witness results were used"""
 
     # Dark mode graphs!!! Awesome!!!
-    plt.style.use('dark_background')
+    plt.style.use("dark_background")
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlabel("Prime")
     ax.set_ylabel("Number of curves")
     ax.set_title("Which witness results were used?")
-    ax.set_xticks(nonmaximal_prime_dist['prime'])
+    ax.set_xticks(nonmaximal_prime_dist["prime"])
     rects = witness_stacked_df.plot.bar(stacked=True, ax=ax)
     autolabel_stacked(ax, rects.patches)
-    plt.savefig(RESULTS_DIR / 'bar_stacked_witnesses.jpg', dpi=400)
+    plt.savefig(RESULTS_DIR / "bar_stacked_witnesses.jpg", dpi=400)
     plt.show()
 
 
@@ -225,35 +286,67 @@ if __name__ == "__main__":
 
     df = pd.read_csv(RESULTS_PATH)
 
-    print("Done. Processing verbose results. Shouldn't be more than a minute or two ...")
+    print(
+        "Done. Processing verbose results. Shouldn't be more than a minute or two ..."
+    )
 
-    df['probably_nonmaximal_primes'] = df.probably_nonmaximal_primes.apply(ast.literal_eval)
-    df['number_of_nonmaximal_primes'] = df.probably_nonmaximal_primes.apply(len)
-    nonmaximal_prime_dist = pd.Series(Counter(chain(*df.probably_nonmaximal_primes))).sort_index().rename_axis('prime').reset_index(name='f')
+    df["probably_nonmaximal_primes"] = df.probably_nonmaximal_primes.apply(
+        ast.literal_eval
+    )
+    df["number_of_nonmaximal_primes"] = df.probably_nonmaximal_primes.apply(len)
+    nonmaximal_prime_dist = (
+        pd.Series(Counter(chain(*df.probably_nonmaximal_primes)))
+        .sort_index()
+        .rename_axis("prime")
+        .reset_index(name="f")
+    )
 
-    df['torsion_primes'] = df['torsion_primes'].str.replace('{}','set()')
-    df['torsion_primes'] = df['torsion_primes'].apply(eval)
-    df['probably_nonmaximal_primes'] = df.probably_nonmaximal_primes.apply(set)
+    df["torsion_primes"] = df["torsion_primes"].str.replace("{}", "set()")
+    df["torsion_primes"] = df["torsion_primes"].apply(eval)
+    df["probably_nonmaximal_primes"] = df.probably_nonmaximal_primes.apply(set)
 
-    df['nontorsion_nonmaximal_primes'] = df['probably_nonmaximal_primes'] - df['torsion_primes'].apply(set)
+    df["nontorsion_nonmaximal_primes"] = df["probably_nonmaximal_primes"] - df[
+        "torsion_primes"
+    ].apply(set)
 
-    torsion_prime_dist = pd.Series(Counter(chain(*df.torsion_primes))).sort_index().rename_axis('prime').reset_index(name='f')
-    nontorsion_nonmaximal_prime_dist = pd.Series(Counter(chain(*df.nontorsion_nonmaximal_primes))).sort_index().rename_axis('prime').reset_index(name='f')
+    torsion_prime_dist = (
+        pd.Series(Counter(chain(*df.torsion_primes)))
+        .sort_index()
+        .rename_axis("prime")
+        .reset_index(name="f")
+    )
+    nontorsion_nonmaximal_prime_dist = (
+        pd.Series(Counter(chain(*df.nontorsion_nonmaximal_primes)))
+        .sort_index()
+        .rename_axis("prime")
+        .reset_index(name="f")
+    )
 
-    df['type_scores'] = df.verbose_output.apply(get_type_scores)
-    df['witness_scores'] = df.verbose_output.apply(get_witness_scores)
+    df["type_scores"] = df.verbose_output.apply(get_type_scores)
+    df["witness_scores"] = df.verbose_output.apply(get_witness_scores)
 
-    add_them = {k:sum([that_counter[k] for that_counter in df['type_scores']], Counter()) for k in nonmaximal_prime_dist['prime']}
-    add_witnesses = {k:sum([that_counter[k] for that_counter in df['witness_scores']], Counter()) for k in nonmaximal_prime_dist['prime'] if k != 2}
+    add_them = {
+        k: sum([that_counter[k] for that_counter in df["type_scores"]], Counter())
+        for k in nonmaximal_prime_dist["prime"]
+    }
+    add_witnesses = {
+        k: sum([that_counter[k] for that_counter in df["witness_scores"]], Counter())
+        for k in nonmaximal_prime_dist["prime"]
+        if k != 2
+    }
 
-    stacked_df = pd.DataFrame.from_dict(add_them, orient='index').fillna(0.0)
-    witness_stacked_df = pd.DataFrame.from_dict(add_witnesses, orient='index').fillna(0.0)
+    stacked_df = pd.DataFrame.from_dict(add_them, orient="index").fillna(0.0)
+    witness_stacked_df = pd.DataFrame.from_dict(add_witnesses, orient="index").fillna(
+        0.0
+    )
 
     print("Done. Plotting...")
 
     plot_hist_prime_count(df)
     plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=[2])
-    plot_bar_stacked_nonmaximal_prime_dist_torsion(nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2])
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2]
+    )
     plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df)
     plot_bar_stacked_witnesses(witness_stacked_df)
 

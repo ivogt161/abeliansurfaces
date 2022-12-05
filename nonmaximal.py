@@ -10,7 +10,7 @@ Code is organized according to maximal subgroups of GSp_4
 To run this script in parallel, get the broken down data files into the
 data directory, and then from the top directory, run
 
-find ./data -type f | parallel "sage nonmaximal.py {} --scheme big --logfile big_2022_12_01.log"
+find ./data -type f | parallel "sage nonmaximal.py {} --scheme old --logfile old_2022_12_01.log"
 
 """
 
