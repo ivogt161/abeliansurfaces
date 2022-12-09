@@ -646,12 +646,13 @@ in the LMFDB, the following will do it. It will output the file in the cwd.
 # """
 
 print("Running one example...")
-f = [1, -6, -3, 1, -3, -2]
-h = [0,1,1]
+f = [45, -69, 85, -48, 23, 1]
+h = [1, 1]
 C = HyperellipticCurve(R(f),R(h))
-conductor_of_C = 134974
+conductor_of_C = 47089
+poor_cond = 2 * prod(genus2reduction(h,f).local_data.keys())
 possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
+probably_nonmaximal_primes = is_surjective(C,poor_cond, L=list(possibly_nonmaximal_primes))
 print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
                                                      probably_nonmaximal_primes))
 

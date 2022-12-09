@@ -12,6 +12,7 @@ data directory, and then from the top directory, run
 
 find ./data -type f | parallel "sage nonmaximal.py {} --scheme old --logfile old_2022_12_01.log"
 
+
 """
 
 # Imports
@@ -540,7 +541,7 @@ load("find_surj_from_list.sage")
 #########################################################
 
 
-def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
+def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
     """The main function
 
     Args:
@@ -592,7 +593,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
     while not sufficient_p:
         p = next_prime(p)
-        if N % p != 0:
+        if poor_cond % p != 0:
             logging.debug(f"Doing part 1 for p = {p}")
             Cp = C.change_ring(FiniteField(p))
             fp = Cp.frobenius_polynomial()
@@ -681,13 +682,18 @@ def nonmaximal_wrapper_old(row, path_to_datafile=None):
     logging.info("Starting curve of label {}".format(row["labels"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
     conductor_of_C = Integer(row["labels"].split(".")[0])
+            
+    f, h = C.hyperelliptic_polynomials()
+    red_data = genus2reduction(h, f)
+    poor_cond = 2 * prod(genus2reduction(h,f).local_data.keys())
+
     try:
         possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(
-            C, N=conductor_of_C, path_to_datafile=path_to_datafile
+            C, poor_cond, N=conductor_of_C, path_to_datafile=path_to_datafile
         )
         possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
         probably_nonmaximal_primes_verbose = is_surjective(
-            C, L=list(possibly_nonmaximal_primes), verbose=True
+            C, poor_cond, L=list(possibly_nonmaximal_primes), verbose=True
         )
         probably_nonmaximal_primes, final_verbose_column = format_verbose_column(
             possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
@@ -706,19 +712,23 @@ def nonmaximal_wrapper_big(row, path_to_datafile=None):
     logging.info("Starting curve of cond.disc {}.{}".format(row["cond"], row["disc"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
     conductor_of_C = Integer(row["cond"])
+    f, h = C.hyperelliptic_polynomials()
+    red_data = genus2reduction(h, f)
+    poor_cond = 2 * prod(genus2reduction(h,f).local_data.keys())
+
     try:
         possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(
-            C, N=conductor_of_C, path_to_datafile=path_to_datafile
+            C, poor_cond, N=conductor_of_C, path_to_datafile=path_to_datafile
         )
         possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
         probably_nonmaximal_primes_verbose = is_surjective(
-            C, L=list(possibly_nonmaximal_primes), verbose=True
+            C, poor_cond, L=list(possibly_nonmaximal_primes), verbose=True
         )
         probably_nonmaximal_primes, final_verbose_column = format_verbose_column(
             possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose
         )
     except RuntimeError as e:
-        logging.warning(f"Curve {row['cond']}.{row['disc']} failed because: {str(e)}")
+        logging.warning(f"Curve {row['labels']} failed because: {str(e)}")
         possibly_nonmaximal_primes = {0}
         probably_nonmaximal_primes = []
         final_verbose_column = []

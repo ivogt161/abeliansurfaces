@@ -141,7 +141,7 @@ def _update_wit(l, p, frob, f, h, wit):
     return wit
 
 
-def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
+def is_surjective(H, poor_cond, L=list(primes(1000)), bound=1000, verbose=False):
     r"""
     Return a list of primes in L at which the residual Galois representation of the Jacobian of `H` might not be surjective.
     Outside of the returned list, all primes in L are surjective. The primes in the returned list are likely non-surjective.
@@ -173,13 +173,11 @@ def is_surjective(H, L=list(primes(1000)), bound=1000, verbose=False):
 
     """
     f,h = H.hyperelliptic_polynomials()
-    # C = 2 * genus2reduction(h, f).conductor # An integer which agrees up with the conductor of H: y^2 + h y = f, except possibly at two. Bad primes of Jac(H) divide it.
-    C = 2 * prod(genus2reduction(h,f).local_data.keys())
     witnesses = _init_wit(L)
     #exps = _init_exps()
     to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
     for p in primes(3,bound):
-        if C % p != 0:
+        if poor_cond % p != 0:
             Hp = H.change_ring(GF(p))
             frob = Hp.frobenius_polynomial()
             to_remove = []

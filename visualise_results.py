@@ -44,6 +44,8 @@ Notes:
 
 import pandas as pd
 import ast
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from collections import Counter
 from itertools import chain
@@ -167,7 +169,7 @@ def plot_hist_prime_count(df):
         lw=3.0,
     )
     autolabel(ax, patches)
-    plt.savefig(RESULTS_DIR / "hist_nonmaximal_prime_count.jpg", dpi=400)
+    plt.savefig(RESULTS_DIR / 'hist_nonmaximal_prime_count.png', dpi=400)
     plt.show()
 
 
@@ -196,7 +198,7 @@ def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None
         lw=3.0,
     )
     autolabel(ax, rects)
-    plt.savefig(RESULTS_DIR / "bar_nonmaximal_prime_dist.jpg", dpi=400)
+    plt.savefig(RESULTS_DIR / 'bar_nonmaximal_prime_dist.png', dpi=400)
     plt.show()
 
 
@@ -242,8 +244,8 @@ def plot_bar_stacked_nonmaximal_prime_dist_torsion(
         lw=3.0,
     )
     autolabel(ax, rects)
-    ax.legend((rects[0], rects_torsion[0]), ("non torsion", "torsion"))
-    plt.savefig(RESULTS_DIR / "bar_stacked_nonmaximal_prime_dist_torsion.jpg", dpi=400)
+    ax.legend((rects[0], rects_torsion[0]), ('non torsion', 'torsion'))
+    plt.savefig(RESULTS_DIR / 'bar_stacked_nonmaximal_prime_dist_torsion.png', dpi=400)
     plt.show()
 
 
@@ -259,7 +261,7 @@ def plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df):
     ax.set_xticks(nonmaximal_prime_dist["prime"])
     rects = stacked_df.plot.bar(stacked=True, ax=ax)
     autolabel_stacked(ax, rects.patches)
-    plt.savefig(RESULTS_DIR / "bar_stacked_nonmaximal_prime_dist_types.jpg", dpi=400)
+    plt.savefig(RESULTS_DIR / 'bar_stacked_nonmaximal_prime_dist_types.png', dpi=400)
     plt.show()
 
 
@@ -276,7 +278,7 @@ def plot_bar_stacked_witnesses(witness_stacked_df):
     ax.set_xticks(nonmaximal_prime_dist["prime"])
     rects = witness_stacked_df.plot.bar(stacked=True, ax=ax)
     autolabel_stacked(ax, rects.patches)
-    plt.savefig(RESULTS_DIR / "bar_stacked_witnesses.jpg", dpi=400)
+    plt.savefig(RESULTS_DIR / 'bar_stacked_witnesses.png', dpi=400)
     plt.show()
 
 
