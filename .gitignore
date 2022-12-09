@@ -1,5 +1,7 @@
 data/
 torsion_data_in/
 torsion_data_out/
-final_output/
-output/
+big_final_output/
+big_output/
+output/results_big.csv
+log_files/
