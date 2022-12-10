@@ -11,7 +11,7 @@ Code is organized according to maximal subgroups of GSp_4"""
 import ast
 import pandas as pd
 import string
-
+import logging
 # Globals
 
 R.<x> = PolynomialRing(QQ)
@@ -504,6 +504,7 @@ def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
                     if (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)) or (p > 100):
                         if p > 100 and not (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)):
                             warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}" 
+                            logging.warning(warning_msg)
                             print(warning_msg)
                         sufficient_p = True
 
@@ -553,7 +554,6 @@ def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
     for k in [2,3,5,7]:
         if k not in non_maximal_primes_verbose:
             non_maximal_primes_verbose[k] = '?'
-
     return non_maximal_primes_verbose
 
 
