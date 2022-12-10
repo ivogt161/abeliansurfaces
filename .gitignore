@@ -3,7 +3,8 @@ torsion_data_in/
 torsion_data_out/
 big_final_output/
 big_output/
-output/results_big.csv
+output/*
+!output/results_lmfdb.csv
 log_files/
 data/__pycache__
 data/curve_data/__pycache__

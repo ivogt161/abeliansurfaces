@@ -71,12 +71,14 @@ sage nonmaximal.py ./data/curve_data/lmfdb_input_example.csv  --scheme lmfdb --l
 or 
 
 ```
-sage nonmaximal.py ./data/curve_data/newb_input_example.csv  --scheme new --logfile new_2022_12_01.log
+sage nonmaximal.py ./data/curve_data/new_input_example.csv  --scheme new --logfile new_2022_12_01.log
 ```
 
 depending on the format of the input data.
 
 (Replace the path to the example data files with the path to your data file.)
+
+An output file with the results will end up in the `output` directory.
 
 ### I need help getting my curves into one of these formats
 
@@ -93,8 +95,7 @@ Let's suppose you query the LMFDB and download data directly from there. The dat
 Let's suppose you have access to a huge datafile that doesn't have LMFDB labels in it (e.g. this one: https://math.mit.edu/~drew/st2e20.txt)
 
 1. Save this file in `data/curve_data`.
-2. From the top level, run `python3 helper_scripts/split_data_new.py`. 
-3. Run `sage -python -m helper_scripts.split_data`. This should produce LOADS OF files in `data/curve_data`, each containing `B` curves from the initial datafile. (This is useful for parallelisation. Currently `B` is 200.) Feel free to edit `split_data_new.py` to your purposes.
+2. From the top level, run `python3 helper_scripts/split_data_new.py`. This should produce LOADS OF files in `data/curve_data`, each containing `B` curves from the initial datafile. (This is useful for parallelisation. Currently `B` is 200.) Feel free to edit `split_data_new.py` to your purposes.
 
 ### I want to run in parallel
 

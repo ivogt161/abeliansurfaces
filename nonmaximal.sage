@@ -23,7 +23,6 @@ x = R.gen()
 # should resolve the issue.
 
 PATH_TO_MY_TABLE = 'data/gamma0_wt2_hecke_lpolys.txt'
-OUTPUT_FILE = "g2c_results_verbose.csv"
 HECKE_LPOLY_LIM = 1025  # the limit up to which we have complete lpoly data
 
 #########################################################
@@ -68,16 +67,6 @@ def update_verbose_results(dict_to_update, new_keys, value_str):
                 dict_to_update[k] = value_str
     return dict_to_update
 
-def format_verbose_column(type_dict, wit_dict):
-
-    surj_primes_verbose = []
-
-    for k in wit_dict:
-        if -1 in wit_dict[k] or 0 in wit_dict[k]:
-            surj_primes_verbose.append((k,type_dict[k],wit_dict[k]))
-
-    return [k for k,v,wit in surj_primes_verbose],['{}.{}:wit={}'.format(str(k),v,wit) for k,v,wit in surj_primes_verbose]
-
 
 #########################################################
 #                            #
@@ -118,7 +107,7 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
     Returns:
         (list): TODO
     """
-    ap = -fp.coefficients(sparse=false)[3]
+    ap = -fp.coefficients(sparse=False)[3]
     if ap == 0:
         return MM
     else:
@@ -129,7 +118,6 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
             else:
                 MM0.append((phi,gcd(M,p*ap), y+1))
 
-#        MM0 = [(phi,M/(p_part(2,M)*p_part(3,M)), y) for phi,M,y in MM0]
         return MM0
 
 
@@ -143,6 +131,7 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
 #This should probably be update with the GCD of the return value and 120
 def compute_f_from_d(d,p):
 	return Integers(d)(p).multiplicative_order()
+
 
 def rule_out_one_dim_ell(p,fp,d,M):
     """Zev's direct implementation of what is in Dieulefait SS 3.1 and 3.2.
@@ -176,6 +165,7 @@ def rule_out_related_two_dim_ell_case1(p,fp,d,M):
         M = gcd(M,p*Q.resultant(x^f-1))
 
     return M
+
 
 def rule_out_related_two_dim_ell_case2(p,fp,d,M):
     if M != 1:
@@ -257,12 +247,19 @@ def roots_pairs_not_p(ptsa):
 #into M
 def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = power_roots((c, p, t, s, 1))
-    Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-    Pval = Pnew(1)
+    Pnew = (
+        x ** 4
+        - tnew * x ** 3
+        + snew * x ** 2
+        - p ** alphanew * tnew * x
+        + p ** (2 * alphanew)
+    )
+    Pval = Pnew(x=1)
     if Pval != 0:
-        return ZZ(gcd(M, p*Pval)), y+1
+        return ZZ(gcd(M, p * Pval)), y + 1
     else:
         return M, y
+
 
 #t and s are the first and second elementary symmetric functions in the
 #roots of the characteristic polynomial of Frobenius at p for a curve C
@@ -273,13 +270,18 @@ def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
 def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
     p, tnew, snew, alphanew = roots_pairs_not_p((p, t, s, 1))
     p, tnew, snew, alphanew = power_roots((c, p, tnew, snew, alphanew))
-    Pnew(x) = x^4 - tnew*x^3 + snew*x^2 - p^alphanew*tnew*x + p^(2*alphanew)
-    Pval = Pnew(1)*Pnew(p^c)
+    Pnew = (
+        x ** 4
+        - tnew * x ** 3
+        + snew * x ** 2
+        - p ** alphanew * tnew * x
+        + p ** (2 * alphanew)
+    )
+    Pval = Pnew(x=1) * Pnew(x=p ** c)
     if Pval != 0:
-        return ZZ(gcd(M, p*Pval)), y+1
+        return ZZ(gcd(M, p * Pval)), y + 1
     else:
         return M, y
-
 
 
 #########################################################
@@ -382,7 +384,6 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
                 cusp_form_space, p
             )
             raise RuntimeError(warning_msg)
-
     return hecke_charpoly
 
 
@@ -486,15 +487,11 @@ def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
             fp = Cp.frobenius_polynomial()
             fp_rev = Cp.zeta_function().numerator()
 
-            #M31 = rule_out_one_dim_ell(p,fp,d,M31);
-            #M32A = rule_out_related_two_dim_ell_case1(p,fp,d,M32A)
-            #M32B = rule_out_related_two_dim_ell_case2(p,fp,d,M32B)
-
             f = Integers(d)(p).multiplicative_order()
             c = gcd(f, 120)
             c = lcm(c, 8)  # adding in the max power of 2
-            tp = - fp.coefficients(sparse=false)[3]
-            sp = fp.coefficients(sparse=false)[2]
+            tp = - fp.coefficients(sparse=False)[3]
+            sp = fp.coefficients(sparse=False)[2]
 
             M1p3, y1p3 = rule_out_1_plus_3_via_Frob_p(c, p, tp, sp, M1p3, y1p3)
             M2p2nsd, y2p2nsd = rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, tp, sp, M2p2nsd, y2p2nsd)
