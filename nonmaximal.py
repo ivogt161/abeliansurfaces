@@ -10,7 +10,7 @@ Code is organized according to maximal subgroups of GSp_4
 To run this script in parallel, get the broken down data files into the
 data directory, and then from the top directory, run
 
-find ./data -type f | parallel "sage nonmaximal.py {} --scheme old --logfile old_2022_12_01.log"
+find ./data -type f | parallel "sage nonmaximal.py {} --scheme lmfdb --logfile lmfdb_2022_12_01.log"
 
 
 """
@@ -61,7 +61,7 @@ x = R.gen()
 # this file into sage. If there's any problem, making the following path absolute
 # should resolve the issue.
 
-PATH_TO_MY_TABLE = "gamma0_wt2_hecke_lpolys_new.txt"
+PATH_TO_MY_TABLE = "data/gamma0_wt2_hecke_lpolys.txt"
 HECKE_LPOLY_LIM = 1025  # the limit up to which we have complete lpoly data
 
 #########################################################
@@ -677,7 +677,7 @@ def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
     return non_maximal_primes_verbose
 
 
-def nonmaximal_wrapper_old(row, path_to_datafile=None):
+def nonmaximal_wrapper_lmfdb(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
     logging.info("Starting curve of label {}".format(row["labels"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
@@ -707,7 +707,7 @@ def nonmaximal_wrapper_old(row, path_to_datafile=None):
     return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
 
 
-def nonmaximal_wrapper_big(row, path_to_datafile=None):
+def nonmaximal_wrapper_new(row, path_to_datafile=None):
     """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
     logging.info("Starting curve of cond.disc {}.{}".format(row["cond"], row["disc"]))
     C = HyperellipticCurve(R(row["data"][0]), R(row["data"][1]))
@@ -764,18 +764,14 @@ def get_many_results(filename, scheme, subset=None):
         )
     else:
         print(
-            "Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(
-                subset
-            )
+            "Running on curves in your file. Check the logfile for progress..."
         )
         logging.info(
-            "Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(
-                subset
-            )
+            "Running on curves in your file."
         )
 
     # The following block runs the above code on all curves in the dataframe
-    if scheme == "old":
+    if scheme == "lmfdb":
         df[
             [
                 "possibly_nonmaximal_primes",
@@ -783,7 +779,7 @@ def get_many_results(filename, scheme, subset=None):
                 "verbose_output",
             ]
         ] = df.apply(
-            nonmaximal_wrapper_old,
+            nonmaximal_wrapper_lmfdb,
             axis=int(1),
             path_to_datafile=PATH_TO_MY_TABLE,
             result_type="expand",
@@ -793,7 +789,7 @@ def get_many_results(filename, scheme, subset=None):
         # This has been computed in Magma elsewhere. Since not everyone has access to
         # Magma, this data has been saved in the file 'torsion_primes.csv'.
 
-        df_torsion = pd.read_csv("torsion_primes.csv")
+        df_torsion = pd.read_csv("data/torsion_primes.csv")
         df = pd.merge(df, df_torsion, how="left", on="labels")
 
     else:
@@ -804,7 +800,7 @@ def get_many_results(filename, scheme, subset=None):
                 "verbose_output",
             ]
         ] = df.apply(
-            nonmaximal_wrapper_big,
+            nonmaximal_wrapper_new,
             axis=int(1),
             path_to_datafile=PATH_TO_MY_TABLE,
             result_type="expand",
@@ -826,7 +822,7 @@ def cli_handler(args):
     logging.basicConfig(
         format="%(asctime)s %(levelname)s: %(message)s",
         datefmt="%H:%M:%S",
-        filename=args.logfile,
+        filename="./log_files/" + args.logfile,
         level=loglevel,
     )
     get_many_results(args.filename, args.scheme)
@@ -843,14 +839,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scheme",
         type=str,
-        required=True,
-        choices=["old", "big"],
-        help="whether running on small (legacy) dataset or the new one",
+        choices=["lmfdb", "new"],
+        default="lmfdb",
+        help="whether running on LMFDB dataset or Drew's bigger and newer data",
     )
     parser.add_argument(
         "--logfile",
         type=str,
-        required=True,
+        default="logs.log",
         help="the file to which logs get output",
     )
     parser.add_argument("--verbose", action="store_true", help="get more info printed")

@@ -1,4 +1,0 @@
-"""
-flake8 cannot handle Sage syntax and having so much errors, so I'm temporarily
-putting code here whenever necessary.
-"""

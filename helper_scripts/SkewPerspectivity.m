@@ -1,5 +1,3 @@
-
-
 /* This code tests to see if we recognize all of the maximal subgroups of GSp_4(F_ell) for ell between 11 and 47, as a sanity check. It also checks that the statistics of (tr^2/similitude factor, middle coefficient/similitude factor) for all elements of the exceptional groups are in the finite precomputed list.
 */
 

@@ -5,6 +5,10 @@ data directory, and then from the top directory, run
 
 find ./torsion_data_out -type f | parallel "python3 produce_final_output.py {}"
 
+This is a hacky script to combine data from different tables; it arose because
+torsion prime data was missing, so had to be computed separately and added
+to the output. 
+
 """
 
 import pandas as pd

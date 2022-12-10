@@ -47,38 +47,3 @@ for MyLine in LinesOfInputFile do
 end for;
 
 quit;
-
-
-// DataOnly := "[[17,7,7,11,2,2,1],[0,1,0,1]]";
-/*
-one_line_print := function(list);
-  output := "[";
-    for i in [1..#list] do
-      if i eq #list then
-        str := "%o]";
-      else
-        str := "%o,";
-      end if;
-      output := output cat Sprintf(str, list[i]); 
-    end for;
-  return output;
-end function;
-
-R<x> := PolynomialRing(RationalField());
-
-for N in MissingLevels do
-    NCF := NewSubspace(CuspForms(N));
-    for p in PrimesUpTo(100) do
-        pol := R!HeckePolynomial(NCF,p);
-        S<a,b> := PolynomialRing(RationalField(),2);
-        test:=S!Evaluate(pol,a);
-        test:=Homogenization(test,b);
-        test:=Evaluate(test,a,1 + p * b^2);
-        pol:=Evaluate(test,a,0);
-        base:=one_line_print(Reverse(Coefficients(pol)));
-        to_print:=Sprintf("%o:%o",N,p);
-        to_print := to_print cat ":" cat base cat "\n";
-        fprintf OutputFileName, to_print;
-    end for;
-end for;
-*/

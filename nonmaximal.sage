@@ -11,11 +11,6 @@ Code is organized according to maximal subgroups of GSp_4"""
 import ast
 import pandas as pd
 import string
-import logging
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S',
-    filename='all_curves_072622.log', level=logging.DEBUG)
-
-logger = logging.getLogger(__name__)
 
 # Globals
 
@@ -27,9 +22,9 @@ x = R.gen()
 # this file into sage. If there's any problem, making the following path absolute
 # should resolve the issue.
 
-PATH_TO_MY_TABLE = 'gamma0_wt2_hecke_lpolys_1000.txt'
+PATH_TO_MY_TABLE = 'data/gamma0_wt2_hecke_lpolys.txt'
 OUTPUT_FILE = "g2c_results_verbose.csv"
-HECKE_LPOLY_LIM = 1000  # the limit up to which we have complete lpoly data
+HECKE_LPOLY_LIM = 1025  # the limit up to which we have complete lpoly data
 
 #########################################################
 #                            #
@@ -364,7 +359,6 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
     ]
 
     if slice_of_coeff_table.shape[0] == 1:
-        logger.info("doing pandas stuff for level {}".format(cusp_form_space))
         hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
         if hecke_charpoly_coeffs:
             hecke_charpoly = sum(
@@ -375,7 +369,6 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             )
         else:
             # missing data in dat file
-            logger.warning(f"On the fly cusp form computation for level {cusp_form_space}")
             CuspFormSpaceOnfly = CuspForms(cusp_form_space)
             hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnfly, p)
     else:  # i.e., can't find data in database
@@ -383,7 +376,6 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
             # if we are here, then the reason we couldn't find any forms in the DB is
             # that there aren't actually any, so we return an empty product of Lpolys
             hecke_charpoly = 1
-            print(f"I am settiong hecke charpoly to 1 for level {cusp_form_space} and prime {p}")
         else:
             # if we are here, then our lpoly datafile doesn't have enough data
             warning_msg = ("Warning: couldn't find level {} and prime {} in DB").format(
@@ -441,7 +433,7 @@ load('find_surj_from_list.sage')
 #########################################################
 
 
-def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
+def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
     """The main function
 
     Args:
@@ -489,7 +481,7 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
 
     while (not sufficient_p):
         p = next_prime(p)
-        if N % p != 0:
+        if poor_cond % p != 0:
             Cp = C.change_ring(FiniteField(p))
             fp = Cp.frobenius_polynomial()
             fp_rev = Cp.zeta_function().numerator()
@@ -515,7 +507,6 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
                     if (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)) or (p > 100):
                         if p > 100 and not (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)):
                             warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}" 
-                            logger.warning(warning_msg)
                             print(warning_msg)
                         sufficient_p = True
 
@@ -569,121 +560,18 @@ def find_nonmaximal_primes(C, N=None, path_to_datafile=None):
     return non_maximal_primes_verbose
 
 
-def nonmaximal_wrapper(row, path_to_datafile=None):
-    """Pandas wrapper of 'find_nonmaximal_primes' and 'is_surjective'"""
-    logger.info("Starting curve of label {}".format(row['labels']))
-    C = HyperellipticCurve(R(row['data'][0]), R(row['data'][1]))
-    conductor_of_C = Integer(row['labels'].split(".")[0])
-    try:
-        possibly_nonmaximal_primes_verbose = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=path_to_datafile)
-        possibly_nonmaximal_primes = set(possibly_nonmaximal_primes_verbose.keys())
-        probably_nonmaximal_primes_verbose = is_surjective(C, L=list(possibly_nonmaximal_primes), verbose=True)
-        probably_nonmaximal_primes, final_verbose_column = format_verbose_column(possibly_nonmaximal_primes_verbose, probably_nonmaximal_primes_verbose)
-    except RuntimeError as e:
-        logger.warning(f"Curve {row['labels']} failed because: {str(e)}")
-        possibly_nonmaximal_primes = {0}
-        probably_nonmaximal_primes = []
-        final_verbose_column = []
-
-    return possibly_nonmaximal_primes, probably_nonmaximal_primes, final_verbose_column
-
-
-def get_many_results(subset=None):
-    """Main calling function. Outputs a csv file of the results.
-
-    Args:
-        subset ([int], optional): Returns results only on a subset of the data.
-                                Set this to a small number (e.g. 5 or 10) to
-                                get quick results on a few curves. Defaults to
-                                None (meaning the whole dataset).
-    """
-
-    from g2c_curves_all import labels, data
-    df = pd.DataFrame(zip(labels, data),
-                      columns=['labels', 'data'])
-
-    if subset is not None:
-        df = df.head(int(subset)).copy()
-        print("Running on the first {} LMFDB genus 2 curves which are absolutely simple...(will take about {} seconds)...".format(subset, subset*3))
-        logger.info("Running on the first {} LMFDB genus 2 curves which are absolutely simple...(will take about {} seconds)...".format(subset, subset*3))
-    else:
-        print("Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(subset))
-        logger.info("Running on all LMFDB genus 2 curves which are absolutely simple...(will take AGES)...".format(subset))
-
-    # The following line runs the above code on all curves in the dataframe
-    df[['possibly_nonmaximal_primes','probably_nonmaximal_primes', 'verbose_output']] = df.apply(nonmaximal_wrapper, axis=int(1), path_to_datafile=PATH_TO_MY_TABLE, result_type="expand")
-
-    # It may be useful to know the primes where the Jacobian has rational torsion.
-    # This has been computed in Magma elsewhere. Since not everyone has access to
-    # Magma, this data has been saved in the file 'torsion_primes.csv'.
-
-    df_torsion = pd.read_csv('torsion_primes.csv')
-    df = pd.merge(df, df_torsion, how='left', on='labels')
-
-    df.rename(columns={'data': 'polynomials'}, inplace=True)
-
-    # We now output the csv results file
-    df.to_csv(OUTPUT_FILE, index=False)
-    print("The results output to {}".format(OUTPUT_FILE))
-    logger.info("The results output to {}".format(OUTPUT_FILE))
-
-
 #########################################################
 #                            #
 #                         Outputs            #
 #                            #
 #########################################################
 
-"""
-If you want to run the code on either all of, a subset of, the genus 2 curves
-in the LMFDB, the following will do it. It will output the file in the cwd.
-"""
 
-# time get_many_results(5)
-
-# """
-# If however you only want to run it on a specific curve, then the following will do
-# """
-
-print("Running one example...")
-f = [45, -69, 85, -48, 23, 1]
-h = [1, 1]
-C = HyperellipticCurve(R(f),R(h))
-conductor_of_C = 47089
-poor_cond = 2 * prod(genus2reduction(h,f).local_data.keys())
-possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=conductor_of_C, path_to_datafile=PATH_TO_MY_TABLE)
-probably_nonmaximal_primes = is_surjective(C,poor_cond, L=list(possibly_nonmaximal_primes))
-print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
-                                                     probably_nonmaximal_primes))
-
-
-# print("Running Raymond's RM examples...")
-
-# R.<x> = PolynomialRing(QQ)
-# C1 = HyperellipticCurve(R([0, 0, 0, 0, 0, -1]), R([1, 1, 0, 1]))
-# C2 = HyperellipticCurve(R([2, 1, 3, 1, 1]), R([0, 1, 1, 1]))
-# C3 = HyperellipticCurve(R([2, 1, 1, 2]), R([0, 0, 1, 1]))
-
-# curves = [(C1,529)] #, (C2,841), (C3,1225)]
-
-# for C,cond_C in curves:
-#     print(f"Doing computation for curve of conductor {cond_C}")
-#     possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
-#     print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
-#     probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
-#     print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
-
-
-# print("Running a CM example...")
-
-# R.<x> = PolynomialRing(QQ)
-# C = HyperellipticCurve(R([0, 0, 0, 0, 1, 1]), R([1, 1, 0, 1]))
-
-# curves = [(C,169)]
-
-# for C,cond_C in curves:
-#     print(f"Doing computation for curve of conductor {cond_C}")
-#     possibly_nonmaximal_primes = find_nonmaximal_primes(C, N=cond_C, path_to_datafile=PATH_TO_MY_TABLE)
-#     print("Possibly nonmaximal primes: {}".format(possibly_nonmaximal_primes))
-#     probably_nonmaximal_primes = is_surjective(C,L=list(possibly_nonmaximal_primes))
-#     print("Probably nonmaximal primes: {}\n".format(probably_nonmaximal_primes))
+def run_one_example(f,h,cond=None):
+    print("Running one example...")
+    C = HyperellipticCurve(R(f),R(h))
+    poor_cond = 2 * prod(genus2reduction(h,f).local_data.keys())
+    possibly_nonmaximal_primes = find_nonmaximal_primes(C, poor_cond, N=cond, path_to_datafile=PATH_TO_MY_TABLE)
+    probably_nonmaximal_primes = is_surjective(C,poor_cond, L=list(possibly_nonmaximal_primes))
+    print("Possibly nonmaximal primes: {}\nProbably nonmaximal primes: {}".format(possibly_nonmaximal_primes,
+                                                        probably_nonmaximal_primes))

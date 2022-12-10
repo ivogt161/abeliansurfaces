@@ -1,3 +1,9 @@
+"""prepare_lmfdb_upload.py
+
+Used to create a file to reload the g2c_nonsurj_test postgres table.
+
+"""
+
 import pandas as pd
 import logging
 import ast
