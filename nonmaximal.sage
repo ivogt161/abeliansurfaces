@@ -128,62 +128,9 @@ def rule_out_quadratic_ell_via_Frob_p(p,fp,MM):
 #                            #
 #########################################################
 
-#This should probably be update with the GCD of the return value and 120
-def compute_f_from_d(d,p):
-	return Integers(d)(p).multiplicative_order()
-
-
-def rule_out_one_dim_ell(p,fp,d,M):
-    """Zev's direct implementation of what is in Dieulefait SS 3.1 and 3.2.
-    Warning: some bugs because the conductor used here is wrong at 2
-
-    Args:
-        p ([type]): [description]
-        fp ([type]): [description]
-        d ([type]): [description]
-        M ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    if M != 1:
-        f = compute_f_from_d(d,p)
-        x = fp.variables()[0]
-        M = gcd(M,p*fp.resultant(x^f-1))
-
-    return M
-
-
-def rule_out_related_two_dim_ell_case1(p,fp,d,M):
-    if M != 1:
-        f = compute_f_from_d(d,p)
-        ap = -fp.coefficients(sparse=false)[3]
-        bp = fp.coefficients(sparse=false)[2]
-        x = fp.variables()[0]
-
-        Q = (x*bp - 1 - p^2*x^2)*(p*x + 1)^2 - ap^2*p*x^2
-        M = gcd(M,p*Q.resultant(x^f-1))
-
-    return M
-
-
-def rule_out_related_two_dim_ell_case2(p,fp,d,M):
-    if M != 1:
-        f = compute_f_from_d(d,p)
-        ap = -fp.coefficients(sparse=false)[3]
-        bp = fp.coefficients(sparse=false)[2]
-        x = fp.variables()[0]
-
-        Q = (x*bp - p - p*x^2)*(x + 1)^2 - ap^2*x^2
-        M = gcd(M,p*Q.resultant(x^f-1))
-
-    return M
 
 """
-Isabel's code using the fact that the exponent of the determinant
-character divides 120.
-
-the following three functions implement the following for n=2,3,5:
+The following three functions implement the following for n=2,3,5:
 f(x) = x^4 - t*x^3 + s*x^2 - p^alpha*t*x + p^(2*alpha) is a
 degree 4 polynomial whose roots multiply in pairs to p^alpha
 returns the tuple (p, tn, sn, alphan) of the polynomial
@@ -498,20 +445,31 @@ def find_nonmaximal_primes(C, poor_cond, N=None, path_to_datafile=None):
             MCusp = rule_out_cuspidal_spaces_using_Frob_p(p,fp_rev,MCusp,coeff_table=DB)
             MQuad = rule_out_quadratic_ell_via_Frob_p(p,fp,MQuad)
 
+        #See if we have sufficient information for every test
         if (M1p3 == 1) or (y1p3 > 1):
             if (M2p2nsd == 1) or (y2p2nsd > 1):
                 if all((Mq == 1 or yq > 1) for phi, Mq, yq in MQuad):
-                    if (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)) or (p > 100):
-                        if p > 100 and not (all((Mc == 1 or yc>1) for S, Mc, yc in MCusp)):
-                            warning_msg = f"Cuspidal test failed for p={p} and data {[(S,Mc,yc) for S,Mc,yc in MCusp if Mc != 1 and yc <= 1]}" 
-                            logging.warning(warning_msg)
-                            print(warning_msg)
+                    if all((Mc == 1 or yc>1) for S, Mc, yc in MCusp):
                         sufficient_p = True
 
+        #Stop the code if we haven't found helpful information from all Frobenius elements up to 1000
+        if p > 1000:
+            if (M1p3 != 1) and (y1p3 <= 1):
+                failure_msg = f"Odd-dimensional subrep test is not succeeding and M1p3={M1p3}"
+                logging.warning(failure_msg)
+            if (M2p2nsd != 1) and (y2p2nsd <= 1):
+                failure_msg = f"Two-plus-two non self-dual subrep test is not succeeding and M2p2nsd={M2p2nsd}"
+                logging.warning(failure_msg)
+            for S, Mc, yc in MCusp:
+                if Mc != 1 and yc <= 1:
+                    failure_msg = f"Modular forms reducible test is not succeeding for level N={S}: Mc={Mc}"
+                    logging.warning(failure_msg)
+            for phi, Mq, yq in MQuad:
+                if Mq != 1 and yq <=1:
+                    failure_msg = f"Quadratic character test is failing for the character phi={phi}: Mq={Mq}"
+                    logging.warning(failure_msg)
 
-    if not sufficient_p:
-        # means we haven't found an aux prime p < 100 that passed all the tests
-        raise RuntimeError("Couldn't pass all tests with aux primes < 100")
+            raise RuntimeError("Couldn't pass all tests with aux primes < 1000")
 
 
     # we will always include the bad primes.
