@@ -105,6 +105,10 @@ Get your datafiles into a folder (`data/curve_data` below), and then run
 find ./data/curve_data -type f | parallel "sage nonmaximal.py {} --scheme new --logfile new_2022_12_04.log"
 ```
 
+### Where are the large results in your paper?
+
+They can be obtained from [here](https://github.com/BarinderBanwait/barinderbanwait.github.io/raw/master/results_big_corrected_torsion.csv.gz). They will need to be decomporessed after download.
+
 ## Project layout
 The directory layout is as follows
 

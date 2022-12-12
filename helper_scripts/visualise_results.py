@@ -54,10 +54,10 @@ import pathlib
 
 # Globals
 
-RESULTS_PATH = "combined.csv"
+RESULTS_PATH = "./output/results_big_corrected_torsion.csv"
 PRIME_TYPES = ["1p3", "2p2", "cusp", "irred", "?", "nss"]
 WITNESS_TYPES = ["A", "B", "exp"]
-RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "results_dec_2022"
+RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "results"
 # The following requires write permission to the abeliansurfaces folder
 pathlib.Path(RESULTS_DIR).mkdir(parents=True, exist_ok=True)
 
@@ -324,6 +324,8 @@ if __name__ == "__main__":
         .reset_index(name="f")
     )
 
+    print(f"nonmaximal_prime_dist = {nonmaximal_prime_dist}\ntorsion_prime_dist = {torsion_prime_dist}\nnontorsion_nonmaximal_prime_dist = {nontorsion_nonmaximal_prime_dist}")
+
     df["type_scores"] = df.verbose_output.apply(get_type_scores)
     df["witness_scores"] = df.verbose_output.apply(get_witness_scores)
 
@@ -347,8 +349,7 @@ if __name__ == "__main__":
     plot_hist_prime_count(df)
     plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=[2])
     plot_bar_stacked_nonmaximal_prime_dist_torsion(
-        nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2]
-    )
+        nonmaximal_prime_dist, torsion_prime_dist)
     plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df)
     plot_bar_stacked_witnesses(witness_stacked_df)
 
