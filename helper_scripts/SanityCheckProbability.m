@@ -1,6 +1,8 @@
 /*
-    This code sanity checks the probability results in Section 5
-    of the paper.
+    This code sanity checks the probability results in Section 5 of the paper. 
+    This is code to check the formulas for the probabilities for random elements
+    in GSp_4(F_\ell) to be contained in specific subsets C_\alpha,C_\beta,C_\gamma 
+    computed in Proposition 5.1
 */
 
 G1920_statistics := {@ <0, -2>,<0, -1>,<0, 0>, <0, 1>, <0, 2>, <1, 1>, <2, 1>, <2, 2>, <4, 2>, <4, 3>, <8, 4>, <16, 6> @};
