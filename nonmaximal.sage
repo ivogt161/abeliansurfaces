@@ -31,20 +31,6 @@ HECKE_LPOLY_LIM = 1025  # the limit up to which we have complete lpoly data
 #                            #
 #########################################################
 
-def p_part(p, N):
-    if N != 0:
-        return p^valuation(N,p)
-    else:
-        return 1
-
-
-def poor_mans_conductor(C):
-    f,h = C.hyperelliptic_polynomials()
-    red_data = genus2reduction(h,f)
-    N = red_data.conductor
-    if red_data.prime_to_2_conductor_only:
-        N = 2*N
-    return N
 
 def maximal_square_divisor(N):
     PP = prime_factors(N)
@@ -54,9 +40,7 @@ def maximal_square_divisor(N):
 
     return n
 
-def true_conductor(C):
-    print("Warning. This hasn't yet been implemented. The return value isn't actually the conductor.")
-    return poor_mans_conductor(C)
+
 
 def update_verbose_results(dict_to_update, new_keys, value_str):
     if new_keys:

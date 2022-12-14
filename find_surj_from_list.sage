@@ -15,8 +15,6 @@ G720_group_data = [(0, 1), (0, 0), (4, 3), (1, 1), (16, 6), (0, 2), (1, 0), (3, 
 G5040_group_data_mod7 = [(0, 0), (0, 1), (0, 2), (0, 5), (0, 6), (1, 0), (1, 1), (2, 6), (3, 2), (4, 3), (5, 3), (6, 3)]
 
 
-
-
 def _init_wit(L):
     """
     Return a list for witnesses with all entries initially all set to zero or 1, in the following format:
@@ -108,8 +106,6 @@ def _surj_test_5040(l, p, frob_mod):
     return False
 
 
-
-
 def _update_wit(l, p, frob, f, h, wit):
     """
     Return an updated list of witnesses, based on surjectivity tests for frob at p.
@@ -174,7 +170,6 @@ def is_surjective(H, poor_cond, L=list(primes(1000)), bound=1000, verbose=False)
     """
     f,h = H.hyperelliptic_polynomials()
     witnesses = _init_wit(L)
-    #exps = _init_exps()
     to_check = L.copy() # to_check is the list of primes for which we still need to determine surjectivity. Initially, it equals L and we remove primes as their status is determined.
     for p in primes(3,bound):
         if poor_cond % p != 0:
