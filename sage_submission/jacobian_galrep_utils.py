@@ -2,20 +2,22 @@
 r"""
 Some functions regarding Galois representations of Jacobians of
 hyperelliptic curves.
-
 Mostly used in the `gal_reps.py` in this module.
+EXAMPLES::
 
-EXAMPLES:
 Here is an example of a generic Jacobian; the LMFDB label of the curve is
 249.a.249.1::
+
     sage: R.<x> = QQ[]
     sage: f = x^6 + 2*x^3 + 4*x^2 + 4*x + 1
     sage: C = HyperellipticCurve(f)
     sage: A = C.jacobian()
     sage: A.geometric_endomorphism_ring_is_ZZ()
     True
+
 Here is an example of a Jacobian whose endomorphism algebra is a field but not
 the rational number field; the LMFDB label of the curve is 529.a.529.1::
+
     sage: f = x^6 - 4*x^5 + 2*x^4 + 2*x^3 + x^2 + 2*x + 1
     sage: C = HyperellipticCurve(f)
     sage: A = C.jacobian()
@@ -23,17 +25,20 @@ the rational number field; the LMFDB label of the curve is 529.a.529.1::
     True
     sage: A.geometric_endomorphism_ring_is_ZZ()
     False
+
 Here is an example of a Jacobian whose endomorphism algebra is not a field;
 the LMFDB label of the curve is 169.a.169.1::
+
     sage: f = x^6 + 4*x^5 + 6*x^4 + 2*x^3 + x^2 + 2*x + 1
     sage: C = HyperellipticCurve(f)
     sage: A = C.jacobian()
     sage: A.geometric_endomorphism_algebra_is_field()
     False
-.. WARNING:
+
+.. WARNING::
     blah blah
 
-AUTHORS:
+AUTHORS::
 - Us
 """
 
@@ -131,7 +136,7 @@ def _is_surj_at_2(f, h):
     Return True if and only if the mod 2 Galois image of the Jacobian of y^2 + h(x) y = f(x) is surjective, i.e. if and
     only if the Galois group of the polynomial 4*f+h^2 is all of S_6.
     """
-    F = 4 * f + h ^ 2
+    F = 4*f + h**2
     return F.is_irreducible() and F.galois_group().order() == 720
 
 
@@ -157,7 +162,7 @@ def _surj_test_1920(l, p, frob_mod):
 
     assert l % 8 in {3, 5}
 
-    trace_sq_over_sim = frob_mod[3] ^ 2 / p
+    trace_sq_over_sim = frob_mod[3] ** 2 / p
     middle_over_sim = frob_mod[2] / p
 
     G1920_group_data_mod_ell = [(Zmod(l)(a), Zmod(l)(b)) for (a, b) in G1920_group_data]
@@ -171,7 +176,7 @@ def _surj_test_720(l, p, frob_mod):
 
     assert l % 12 in {5, 7} and l != 7
 
-    trace_sq_over_sim = frob_mod[3] ^ 2 / p
+    trace_sq_over_sim = frob_mod[3] ** 2 / p
     middle_over_sim = frob_mod[2] / p
 
     G720_group_data_mod_ell = [(Zmod(l)(a), Zmod(l)(b)) for (a, b) in G720_group_data]
@@ -185,7 +190,7 @@ def _surj_test_5040(l, p, frob_mod):
 
     assert l == 7
 
-    trace_sq_over_sim = frob_mod[3] ^ 2 / p
+    trace_sq_over_sim = frob_mod[3] ** 2 / p
     middle_over_sim = frob_mod[2] / p
 
     if (trace_sq_over_sim, middle_over_sim) not in G5040_group_data_mod7:
@@ -234,8 +239,6 @@ def _update_wit(l, p, frob, f, h, wit):
 def maximal_square_divisor(N):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private.
     # TODO: Add tests/examples (required)
@@ -256,8 +259,6 @@ def maximal_square_divisor(N):
 def maximal_quadratic_conductor(N):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private.
     # TODO: Add tests/examples (required)
@@ -270,8 +271,6 @@ def maximal_quadratic_conductor(N):
 def character_list(N):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private.
     # TODO: Add tests/examples (required)
@@ -283,8 +282,6 @@ def character_list(N):
 def set_up_quadratic_chars(N):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private.
     # TODO: Add tests/examples (required)
@@ -293,22 +290,16 @@ def set_up_quadratic_chars(N):
 
 def rule_out_quadratic_ell_via_Frob_p(p, fp, MM):
     """Provide a summary of what this method is doing.
-
     INPUT:
-
     - ``p`` -- prime integer; new prime.
-
     - ``fp`` -- polynomial over the integers; the characteristic polynomial
         Frobenius at ``p`` on a hyperelliptic curve.
-
     - ``MM`` -- list; the items are tuples of the form ``(\\phi, M, y)``,
         where ``\\phi`` is a non-trivial quadratic character, all primes
         ``\\ell`` for which there is a quadratic obstruction associated with
         ``\\phi`` must divide ``M``, ``y`` is a counter for the number of
         nontrivial Frobenius constraints going into ``M``.
-
     OUTPUT: a list
-
     Args:
         p (int): new prime
         fp (integer poly): charpoly of frobenius at p on a hyperelliptic curve
@@ -316,7 +307,6 @@ def rule_out_quadratic_ell_via_Frob_p(p, fp, MM):
         quadratic character, all primes ell for which there is a quadratic
         obstruction associated with phi must divide M, y is a counter for the
     the number of nontrivial Frobenius constraints going into M
-
     Returns:
         (list): TODO
     """
@@ -357,8 +347,6 @@ def rule_out_quadratic_ell_via_Frob_p(p, fp, MM):
 def power_roots2(ptsa):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -374,8 +362,6 @@ def power_roots2(ptsa):
 def power_roots3(ptsa):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -395,8 +381,6 @@ def power_roots3(ptsa):
 def power_roots5(ptsa):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -430,8 +414,6 @@ def power_roots5(ptsa):
 def power_roots(cptsa):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -459,8 +441,6 @@ def power_roots(cptsa):
 def roots_pairs_not_p(ptsa):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -477,8 +457,6 @@ def roots_pairs_not_p(ptsa):
 def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -507,8 +485,6 @@ def rule_out_1_plus_3_via_Frob_p(c, p, t, s, M=0, y=0):
 def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -539,8 +515,6 @@ def rule_out_2_plus_2_nonselfdual_via_Frob_p(c, p, t, s, M=0, y=0):
 def special_divisors(N):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -551,8 +525,6 @@ def special_divisors(N):
 def get_cuspidal_levels(N, max_cond_exp_2=None):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -560,7 +532,7 @@ def get_cuspidal_levels(N, max_cond_exp_2=None):
         # if we're here, then N is the even poor mans conductor
         conductor_away_two = N / 2  # recall we put a 2 in the poor mans conductor
         possible_conductors = [
-            conductor_away_two * 2 ^ i for i in range(max_cond_exp_2 + 1)
+            conductor_away_two * 2 ** i for i in range(max_cond_exp_2 + 1)
         ]
         return list(
             set([d for N in possible_conductors for d in special_divisors(N)])
@@ -572,8 +544,6 @@ def get_cuspidal_levels(N, max_cond_exp_2=None):
 def set_up_cuspidal_spaces(N, max_cond_exp_2=None):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -584,10 +554,7 @@ def set_up_cuspidal_spaces(N, max_cond_exp_2=None):
 def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     """
     Implement Zev and Joe Wetherell's idea
-
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -604,8 +571,6 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
 def rule_out_cuspidal_space_using_Frob_p(S, p, fp, M, y):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
@@ -620,8 +585,6 @@ def rule_out_cuspidal_space_using_Frob_p(S, p, fp, M, y):
 def rule_out_cuspidal_spaces_using_Frob_p(p, fp, MC):
     """
     TESTS::
-
-
     """
     # TODO: Consider making this function private
     # TODO: Add tests/examples (required)
