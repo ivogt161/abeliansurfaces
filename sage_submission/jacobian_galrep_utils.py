@@ -54,7 +54,7 @@ AUTHORS::
 
 from __future__ import print_function, absolute_import
 
-from sage.arith.all import valuation, gcd
+from sage.arith.all import valuation, gcd, divisors
 from sage.modular.all import CuspForms
 from sage.rings.all import ZZ, QQ, Zmod, PolynomialRing
 from sage.modular.dirichlet import DirichletGroup

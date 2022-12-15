@@ -46,7 +46,7 @@ If the Jacobian has any non-trivial endomorphisms, we raise a ValueError::
     sage: rho = A.galois_representation()
     sage: rho.non_surjective()
     [0]
-    sage: rho.reducible_primes()
+    sage: rho.non_surjective_primes()
     [3]
     sage: E.has_cm()
     True
