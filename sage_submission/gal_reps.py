@@ -11,7 +11,7 @@ Theorem that this representation is surjective for almost all primes `p`
 under the additional assumption that the Jacobian is "generic", meaning
 that the ring of endomorphisms defined over `\overline{\QQ}` is `\ZZ`.
 Currently sage can decide whether or not the image of this representation
-associated to a generic jacobian  is surjective, and moreover can
+associated to a generic jacobian is surjective, and moreover can
 determine exactly the finitely many primes at which the representation
 is not surjective.
 For the surjectivity at one prime:
@@ -40,23 +40,18 @@ EXAMPLES::
 If the Jacobian has any non-trivial endomorphisms, we raise a ValueError::
 
     sage: R.<x>=QQ[]
-    sage: f = x^6 + 2*x^3 + 4*x^2 + 4*x + 1
+    sage: f = x^5 + 17
     sage: C = HyperellipticCurve(f)
     sage: A = C.jacobian()
     sage: rho = A.galois_representation()
     sage: rho.non_surjective()
-    [0]
-    sage: rho.non_surjective_primes()
-    [3]
-    sage: E.has_cm()
-    True
-    sage: rho.image_type(11)
-    'The image is contained in the normalizer of a non-split Cartan group. (cm)'
+    Traceback (most recent call last):
+    ...
+    NotImplementedError: Currently surjectivity can only be determined if the Jacobian has no extra endomorphisms, but this Jacobian does have such.
 
 REFERENCES::
 - [Ser1972]_
 - [Ser1987]_
-- [Coj2005]_
 
 AUTHORS::
 - Barinder Singh Banwait, Armand Brumer, Hyun Jong Kim, Zev Klagsbrun,
@@ -275,6 +270,12 @@ class GaloisRepresentation(SageObject):
         # TODO: Add the papers of Dokchitsers and Elklies in the master
         # bibliography file; consider adding the reference to these papers
         # in the module docstring instead.
+
+        if not self._A.geometric_endomorphism_ring_is_ZZ():
+            raise NotImplementedError(
+                "Currently surjectivity can only be determined if the Jacobian has no extra endomorphisms, but this Jacobian does have such."
+            )
+
         if self.non_surjective_primes is not None:
             if not p.is_prime():
                 raise ValueError("p must be prime")
@@ -353,6 +354,11 @@ class GaloisRepresentation(SageObject):
         # bibliography file and cite them here.
         if self.non_surjective_primes is not None:
             return self.non_surjective_primes
+
+        if not self._A.geometric_endomorphism_ring_is_ZZ():
+            raise NotImplementedError(
+                "Currently surjectivity can only be determined if the Jacobian has no extra endomorphisms, but this Jacobian does have such."
+            )
 
         C = self._A.curve()
 
