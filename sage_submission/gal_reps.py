@@ -27,7 +27,7 @@ EXAMPLES::
     sage: A = C.jacobian()
     sage: rho = A.galois_representation()
     sage: rho.non_surjective()
-    [2,7]
+    [2, 7]
     sage: rho.is_surjective(7)
     False
     sage: rho.is_surjective(2)
