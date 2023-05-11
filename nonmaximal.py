@@ -7,7 +7,6 @@ data directory, and then from the top directory, run
 
 find ./data/curve_data_may_23 -type f | parallel "sage nonmaximal.py {} --scheme lmfdb --logfile lmfdb_may_23.log"
 
-
 """
 
 # Imports

@@ -6,6 +6,8 @@ big_final_output/
 big_output/
 output/*
 !output/results_lmfdb.csv
+output_may_23/*
+!output_may_23/lmfdb_results.csv
 log_files/*
 data/__pycache__
 data/curve_data/__pycache__
