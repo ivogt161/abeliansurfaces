@@ -293,6 +293,7 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
 
     if slice_of_coeff_table.shape[0] == 1:
         hecke_charpoly_coeffs = slice_of_coeff_table.iloc[int(0)]["coeffs"]
+        hecke_charpoly_coeffs.reverse()
         if hecke_charpoly_coeffs:
             hecke_charpoly = sum(
                 [
@@ -303,18 +304,23 @@ def get_hecke_characteristic_polynomial(cusp_form_space, p, coeff_table=None):
         else:
             # missing data in dat file
             CuspFormSpaceOnfly = CuspForms(cusp_form_space)
+            warning_msg = ("Warning: computing cusp forms on the fly for level {} and prime {}").format(
+                cusp_form_space, p
+            )
+            logging.warning(warning_msg)
             hecke_charpoly = reconstruct_hecke_poly_from_trace_polynomial(CuspFormSpaceOnfly, p)
     else:  # i.e., can't find data in database
         if cusp_form_space <= HECKE_LPOLY_LIM:
             # if we are here, then the reason we couldn't find any forms in the DB is
             # that there aren't actually any, so we return an empty product of Lpolys
-            hecke_charpoly = 1
+            hecke_charpoly = R(1)
         else:
             # if we are here, then our lpoly datafile doesn't have enough data
             warning_msg = ("Warning: couldn't find level {} and prime {} in DB").format(
                 cusp_form_space, p
             )
             raise RuntimeError(warning_msg)
+    assert hecke_charpoly.is_monic()
     return hecke_charpoly
 
 

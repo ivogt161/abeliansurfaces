@@ -9,8 +9,9 @@ directory. This is a helper script to allow for parallel running of our code.
 import pathlib
 import pandas as pd
 
-OUTPUT_DIR = pathlib.Path(__file__).parent.parent.absolute() / "data/curve_data"
-from data.curve_data.g2c_curves_list import labels, data
+OUTPUT_DIR = pathlib.Path(__file__).parent.parent.absolute() / "data/curve_data_may_23"
+pathlib.Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+from data.curve_data.g2c_curves_all import labels, data
 
 df = pd.DataFrame(zip(labels, data), columns=["labels", "data"])
 

@@ -5,7 +5,7 @@ This is the top level function used to run the algorithm on lots of curves.
 To run this script in parallel, get the broken down data files into the
 data directory, and then from the top directory, run
 
-find ./data -type f | parallel "sage nonmaximal.py {} --scheme lmfdb --logfile lmfdb_2022_12_01.log"
+find ./data/curve_data_may_23 -type f | parallel "sage nonmaximal.py {} --scheme lmfdb --logfile lmfdb_may_23.log"
 
 
 """
@@ -48,7 +48,8 @@ import logging
 load("find_surj_from_list.sage")
 load("nonmaximal.sage")
 
-OUTPUT_DIR = pathlib.Path(__file__).parent.absolute() / "output"
+OUTPUT_DIR = pathlib.Path(__file__).parent.absolute() / "output_may_23"
+pathlib.Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 
 def format_verbose_column(type_dict, wit_dict):
