@@ -265,7 +265,7 @@ def reconstruct_hecke_poly_from_trace_polynomial(cusp_form_space, p):
     char_T_x = R(cusp_form_space.new_subspace().hecke_polynomial(p))
     S.<a,b> = QQ[]
     char_T_a_b = S(char_T_x(x=a)).homogenize(var='b')
-    substitute_poly = char_T_a_b(a=1+p*b^2)
+    substitute_poly = char_T_a_b(a=p+b**2)
 
     return R(substitute_poly(a=0, b=x))
 
