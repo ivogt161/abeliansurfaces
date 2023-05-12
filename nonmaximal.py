@@ -60,7 +60,7 @@ def format_verbose_column(type_dict, wit_dict):
             surj_primes_verbose.append((k, type_dict[k], wit_dict[k]))
 
     return [k for k, v, wit in surj_primes_verbose], [
-        "{}.{}:wit={}".format(str(k), v, wit) for k, v, wit in surj_primes_verbose
+        "{}:wit={}".format(str(k), v) for k, v in wit_dict.items()
     ]
 
 
