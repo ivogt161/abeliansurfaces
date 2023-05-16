@@ -9,6 +9,7 @@ import pandas as pd
 
 OUTPUT_DIR = pathlib.Path(__file__).parent.parent.absolute() / "data/curve_data"
 path_to_datafile = pathlib.Path(__file__).parent.parent.absolute() / "data/curve_data/st2e20.txt"
+pathlib.Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 df = pd.read_csv(
     path_to_datafile,
