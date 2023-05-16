@@ -1,8 +1,17 @@
 /*TorsionPrimes.m
 
-  Use this script to generate torsion prime data.
+  Use this script to generate torsion prime data:
 
   ls ./data/curve_data_new_may_23 | parallel -j64 "magma -b InputFileName:={} helper_scripts/TorsionPrimes.m"
+
+  This will take the data files in `./data/curve_data_new_may_23`, and for each curve in each file,
+  will generate a new file (appended with `with_torsion`) in the directory `torsion_data_out` containing
+  the torsion primes. 
+
+  In the pipeline for running the main algorithm on lots of curves, one would then use the `produce_final_output.py`
+  script in the `helper_scripts` folder to combine the output of the `nonmaximal.py` algorithm with these torsion
+  primes.
+
 */
 
 RealInputFileName := "./data/curve_data_new_may_23/" cat InputFileName;
