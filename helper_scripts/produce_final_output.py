@@ -3,7 +3,7 @@
 To run this script in parallel, get the broken down data files into the
 data directory, and then from the top directory, run
 
-find ./torsion_data_out -type f | parallel "python3 produce_final_output.py {}"
+find ./torsion_data_out -type f | parallel -j64 "python3 helper_scripts/produce_final_output.py {}"
 
 This is a hacky script to combine data from different tables; it arose because
 torsion prime data was missing, so had to be computed separately and added

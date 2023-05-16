@@ -2,11 +2,11 @@
 
   Use this script to generate torsion prime data.
 
-  ls ./torsion_data_in | parallel "magma -b InputFileName:={} helper_scripts/TorsionPrimes.m"
+  ls ./data/curve_data_new_may_23 | parallel -j64 "magma -b InputFileName:={} helper_scripts/TorsionPrimes.m"
 */
 
-RealInputFileName := "./torsion_data_in/" cat InputFileName;
-OutputFileName := "./again_torsion_data_out/" cat "with_torsion_" cat InputFileName;
+RealInputFileName := "./data/curve_data_new_may_23/" cat InputFileName;
+OutputFileName := "./torsion_data_out/" cat "with_torsion_" cat InputFileName;
 
 LinesOfInputFile := Split(Read(RealInputFileName), "\n");
 Reverse(~LinesOfInputFile);
