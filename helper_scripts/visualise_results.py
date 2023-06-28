@@ -54,10 +54,10 @@ import pathlib
 
 # Globals
 
-RESULTS_PATH = "./output/results_big_corrected_torsion.csv"
+RESULTS_PATH = "../final_output_new_may_23/combined.out"
 PRIME_TYPES = ["1p3", "2p2", "cusp", "irred", "?", "nss"]
-WITNESS_TYPES = ["A", "B", "exp"]
-RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "results"
+WITNESS_TYPES = ["A", "B", "720", "1920", "5040"]
+RESULTS_DIR = pathlib.Path(__file__).parent.absolute() / "lucant_graphs"
 # The following requires write permission to the abeliansurfaces folder
 pathlib.Path(RESULTS_DIR).mkdir(parents=True, exist_ok=True)
 
@@ -96,18 +96,16 @@ def get_witness_scores(verbose_output_str):
     }
 
     for a_verbose_str in verbose_output_list:
-        prime = int(a_verbose_str.split(".", 1)[0])
+        prime = int(a_verbose_str.split(":", 1)[0])
         wit_array = ast.literal_eval(a_verbose_str.split("=")[1])
         if prime != 2:
             how_many_zeros = wit_array.count(0)
             wit_score_array = [(1 / how_many_zeros) * int(k == 0) for k in wit_array]
-            if len(wit_array) == 3:
-                witness_score_dict[prime]["A"] += wit_score_array[0]
-                witness_score_dict[prime]["B"] += wit_score_array[1]
-                witness_score_dict[prime]["exp"] += wit_score_array[2]
-            elif len(wit_array) == 2:
-                witness_score_dict[prime]["A"] += wit_score_array[0]
-                witness_score_dict[prime]["B"] += wit_score_array[1]
+            witness_score_dict[prime]["A"] += wit_score_array[0]
+            witness_score_dict[prime]["B"] += wit_score_array[1]
+            witness_score_dict[prime]["720"] += wit_score_array[2]
+            witness_score_dict[prime]["1920"] += wit_score_array[3]
+            witness_score_dict[prime]["5040"] += wit_score_array[4]
 
     witness_score_counter = {k: Counter(v) for k, v in witness_score_dict.items()}
 
@@ -149,7 +147,7 @@ def autolabel_stacked(ax, rects):
         )
 
 
-def plot_hist_prime_count(df):
+def plot_hist_prime_count(df, filename=None):
     """Plot how many curves had how many nonmaximal primes"""
     min_number_nonmax_primes = df["number_of_nonmaximal_primes"].min()
     max_number_nonmax_primes = df["number_of_nonmaximal_primes"].max()
@@ -169,11 +167,17 @@ def plot_hist_prime_count(df):
         lw=3.0,
     )
     autolabel(ax, patches)
-    plt.savefig(RESULTS_DIR / 'hist_nonmaximal_prime_count.png', dpi=400)
+
+    if filename is None:
+        my_filename = 'hist_nonmaximal_prime_count.png'
+    else:
+        my_filename = filename
+
+    plt.savefig(RESULTS_DIR / my_filename, dpi=400)
     plt.show()
 
 
-def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None):
+def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None, filename=None):
     """Plot how many curves were nonmaximal at each prime"""
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_xlabel("Prime")
@@ -198,12 +202,18 @@ def plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=None
         lw=3.0,
     )
     autolabel(ax, rects)
-    plt.savefig(RESULTS_DIR / 'bar_nonmaximal_prime_dist.png', dpi=400)
+
+    if filename is None:
+        my_filename = 'bar_nonmaximal_prime_dist.png'
+    else:
+        my_filename = filename
+
+    plt.savefig(RESULTS_DIR / my_filename, dpi=400)
     plt.show()
 
 
 def plot_bar_stacked_nonmaximal_prime_dist_torsion(
-    nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=None
+    nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=None, filename=None
 ):
     """
     Plot how many curves were nonmaximal at each prime, showing which of them
@@ -245,7 +255,13 @@ def plot_bar_stacked_nonmaximal_prime_dist_torsion(
     )
     autolabel(ax, rects)
     ax.legend((rects[0], rects_torsion[0]), ('non torsion', 'torsion'))
-    plt.savefig(RESULTS_DIR / 'bar_stacked_nonmaximal_prime_dist_torsion.png', dpi=400)
+
+    if filename is None:
+        my_filename = 'bar_stacked_nonmaximal_prime_dist_torsion.png'
+    else:
+        my_filename = filename
+
+    plt.savefig(RESULTS_DIR / my_filename, dpi=400)
     plt.show()
 
 
@@ -287,7 +303,7 @@ if __name__ == "__main__":
     print("Reading Data ...")
 
     df = pd.read_csv(RESULTS_PATH)
-
+    print(f"df.shape = {df.shape}")
     print(
         "Done. Processing verbose results. Shouldn't be more than a minute or two ..."
     )
@@ -326,31 +342,53 @@ if __name__ == "__main__":
 
     print(f"nonmaximal_prime_dist = {nonmaximal_prime_dist}\ntorsion_prime_dist = {torsion_prime_dist}\nnontorsion_nonmaximal_prime_dist = {nontorsion_nonmaximal_prime_dist}")
 
-    df["type_scores"] = df.verbose_output.apply(get_type_scores)
-    df["witness_scores"] = df.verbose_output.apply(get_witness_scores)
-
-    add_them = {
-        k: sum([that_counter[k] for that_counter in df["type_scores"]], Counter())
-        for k in nonmaximal_prime_dist["prime"]
-    }
-    add_witnesses = {
-        k: sum([that_counter[k] for that_counter in df["witness_scores"]], Counter())
-        for k in nonmaximal_prime_dist["prime"]
-        if k != 2
-    }
-
-    stacked_df = pd.DataFrame.from_dict(add_them, orient="index").fillna(0.0)
-    witness_stacked_df = pd.DataFrame.from_dict(add_witnesses, orient="index").fillna(
-        0.0
-    )
-
     print("Done. Plotting...")
 
     plot_hist_prime_count(df)
-    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=[2])
+    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist, primes_to_exclude=[2], filename='bar_nonmaximal_prime_dist_without_2.png')
+    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist)
     plot_bar_stacked_nonmaximal_prime_dist_torsion(
         nonmaximal_prime_dist, torsion_prime_dist)
-    plot_bar_stacked_nonmaximal_prime_dist_types(stacked_df)
-    plot_bar_stacked_witnesses(witness_stacked_df)
+
+    print("Now doing analogous stuff for ECQ")
+
+    df_ecq = pd.read_csv("ecq_stats.csv")
+
+    df_ecq["nonsurj_primes"] = df_ecq.nonsurj_primes.apply(
+        eval
+    )
+    df_ecq["nonsurj_primes"] = df_ecq.nonsurj_primes.apply(set)
+    
+    df_ecq["number_of_nonmaximal_primes"] = df_ecq.nonsurj_primes.apply(len)
+
+    df_ecq["torsion_primes"] = df_ecq["torsion_primes"].apply(eval).apply(set)
+
+    df_ecq["nontorsion_nonmaximal_primes"] = df_ecq.nontorsion_nonmaximal_primes.apply(eval)
+
+    torsion_prime_dist_ecq = (
+    pd.Series(Counter(chain(*df_ecq.torsion_primes)))
+    .sort_index()
+    .rename_axis("prime")
+    .reset_index(name="f")
+)
+    nontorsion_nonmaximal_prime_dist_ecq = (
+        pd.Series(Counter(chain(*df_ecq.nontorsion_nonmaximal_primes)))
+        .sort_index()
+        .rename_axis("prime")
+        .reset_index(name="f")
+    )
+
+    nonmaximal_prime_dist_ecq = (
+    pd.Series(Counter(chain(*df_ecq.nonsurj_primes)))
+    .sort_index()
+    .rename_axis("prime")
+    .reset_index(name="f")
+)
+
+    plot_hist_prime_count(df_ecq, filename='ecq_hist_nonmaximal_prime_count.png')
+    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist_ecq, primes_to_exclude=[2], filename='ecq_bar_nonmaximal_prime_dist_without_2.png')
+    plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist_ecq, filename='ecq_bar_nonmaximal_prime_dist.png')
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist_ecq, torsion_prime_dist_ecq, filename='ecq_bar_stacked_nonmaximal_prime_dist_torsion.png')
 
     print("Done :)")
