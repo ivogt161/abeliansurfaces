@@ -349,6 +349,12 @@ if __name__ == "__main__":
     plot_bar_nonmaximal_prime_dist(nonmaximal_prime_dist)
     plot_bar_stacked_nonmaximal_prime_dist_torsion(
         nonmaximal_prime_dist, torsion_prime_dist)
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2,3,5,7], filename='hyun_jong_g2c_11.png')
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2,3,5,7,11,13], filename='hyun_jong_g2c_17.png')
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist, torsion_prime_dist, primes_to_exclude=[2,3,5,7,11,13,17], filename='hyun_jong_g2c_23.png')
 
     print("Now doing analogous stuff for ECQ")
 
@@ -391,4 +397,11 @@ if __name__ == "__main__":
     plot_bar_stacked_nonmaximal_prime_dist_torsion(
         nonmaximal_prime_dist_ecq, torsion_prime_dist_ecq, filename='ecq_bar_stacked_nonmaximal_prime_dist_torsion.png')
 
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist_ecq, torsion_prime_dist_ecq, primes_to_exclude=[2,3,5,7], filename='hyun_jong_ecq_11.png')
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist_ecq, torsion_prime_dist_ecq, primes_to_exclude=[2,3,5,7,11,13], filename='hyun_jong_ecq_17.png')
+    plot_bar_stacked_nonmaximal_prime_dist_torsion(
+        nonmaximal_prime_dist_ecq, torsion_prime_dist_ecq, primes_to_exclude=[2,3,5,7,11,13,17], filename='hyun_jong_ecq_23.png')
+    
     print("Done :)")
